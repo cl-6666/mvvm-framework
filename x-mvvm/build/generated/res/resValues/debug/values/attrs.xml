@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MultiStatusLayout -->
+    <declare-styleable name="MultiStateLayout">
+        <attr name="state_loadingLayout" format="reference"/>
+        <attr name="state_emptyLayout" format="reference"/>
+        <attr name="state_errorLayout" format="reference"/>
+        <attr name="state_contentLayout" format="reference"/>
+        <attr name="state_nonetLayout" format="reference"/>
+        <attr name="state_layoutState" format="enum">
+            <enum name="content" value="10001"/>
+            <enum name="loading" value="10002"/>
+            <enum name="empty" value="10003"/>
+            <enum name="error" value="10004"/>
+            <enum name="nonet" value="10005"/>
+        </attr>
+    </declare-styleable>
+
+    <!-- LoadingView -->
+    <declare-styleable name="LoadingView">
+        <attr name="loading_viewSize" format="dimension"/>
+        <attr name="loading_viewColor" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="BorderTextView">
+        <attr name="strokeWidth" format="dimension"/>
+        <attr name="cornerRadius" format="dimension"/>
+        <attr name="strokeColor" format="color"/>
+        <attr name="followTextColor" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="TitleBar">
+        <attr name="titleText" format="string"/>
+        <attr name="leftText" format="string"/>
+        <attr name="leftDrawable" format="reference"/>
+        <attr name="rightText" format="reference"/>
+        <attr name="rightDrawable" format="integer"/>
+        <attr name="showStatus" format="boolean"/>
+        <attr name="showBottom" format="boolean"/>
+        <attr name="onLeftClick" format="boolean"/>
+        <attr name="onRightClick" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="CheckButton">
+        <attr name="size" format="dimension" />
+        <attr name="color_border" format="color" />
+        <attr name="color_background" format="color" />
+    </declare-styleable>
+
+    <!-- ViewAdapter -->
+    <declare-styleable name="CheckBox">
+        <attr name="onCheckedChange" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="EditText">
+        <attr name="onTextChange" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="View">
+        <attr name="onClick" format="reference" />
+        <attr name="onLongClick" format="reference" />
+    </declare-styleable>
+
+</resources>
