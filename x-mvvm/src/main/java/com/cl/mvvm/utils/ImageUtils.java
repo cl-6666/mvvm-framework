@@ -1,2118 +1,962 @@
 package com.cl.mvvm.utils;
 
-import android.content.res.Resources;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Shader;
+import android.graphics.Shader.TileMode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.ExifInterface;
-import android.os.Build;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.view.View;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.MediaStore.MediaColumns;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.FloatRange;
-import androidx.annotation.IntRange;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
-
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 /**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 2016/08/12
- *     desc  : utils about image
- * </pre>
+ * Created by goldze on 2017/7/17.
+ * 图片相关工具类,包含图片压缩,图片缩放,图片裁剪等功能
  */
-public final class ImageUtils {
+public class ImageUtils {
 
-    private ImageUtils() {
-        throw new UnsupportedOperationException("u can't instantiate me...");
+    private static final float MAX_SIZE = 200;//接受的最大图片尺寸为200k，200k以上的图片压缩到200k一下
+
+    public final static String SDCARD_MNT = "/mnt/sdcard";
+    public final static String SDCARD = "/sdcard";
+
+    /** 请求相册 */
+    public static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;
+    
+    public static final int REQUEST_CODE_GETIMAGE_BYSDCARD_info = 4;
+    
+    /** 请求相机 */
+    public static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;
+    /** 请求裁剪 */
+    public static final int REQUEST_CODE_GETIMAGE_BYCROP = 2;
+    /** 从图片浏览界面发送动弹 */
+    public static final int REQUEST_CODE_GETIMAGE_IMAGEPAVER = 3;
+
+    /**
+     * 写图片文件 在Android系统中，文件保存在 /data/data/PACKAGE_NAME/files 目录下
+     * 
+     * @throws IOException
+     */
+    public static void saveImage(Context context, String fileName, Bitmap bitmap)
+            throws IOException {
+        saveImage(context, fileName, bitmap, 100);
+    }
+
+    public static void saveImage(Context context, String fileName,
+                                 Bitmap bitmap, int quality) throws IOException {
+        if (bitmap == null || fileName == null || context == null)
+            return;
+
+        FileOutputStream fos = context.openFileOutput(fileName,
+                Context.MODE_PRIVATE);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(CompressFormat.JPEG, quality, stream);
+        byte[] bytes = stream.toByteArray();
+        fos.write(bytes);
+        fos.close();
     }
 
     /**
-     * Bitmap to bytes.
-     *
-     * @param bitmap The bitmap.
-     * @param format The format of bitmap.
-     * @return bytes
+     * 写图片文件到SD卡
+     * 
+     * @throws IOException
      */
-    public static byte[] bitmap2Bytes(final Bitmap bitmap, final CompressFormat format) {
-        if (bitmap == null) {
-            return null;
-        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(format, 100, baos);
-        return baos.toByteArray();
-    }
-
-    /**
-     * Bytes to bitmap.
-     *
-     * @param bytes The bytes.
-     * @return bitmap
-     */
-    public static Bitmap bytes2Bitmap(final byte[] bytes) {
-        return (bytes == null || bytes.length == 0)
-                ? null
-                : BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-
-    /**
-     * Drawable to bitmap.
-     *
-     * @param drawable The drawable.
-     * @return bitmap
-     */
-    public static Bitmap drawable2Bitmap(final Drawable drawable) {
-        if (drawable instanceof BitmapDrawable) {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if (bitmapDrawable.getBitmap() != null) {
-                return bitmapDrawable.getBitmap();
+    public static void saveImageToSD(Context ctx, String filePath,
+                                     Bitmap bitmap, int quality) throws IOException {
+        if (bitmap != null) {
+            File file = new File(filePath.substring(0,
+                    filePath.lastIndexOf(File.separator)));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream(filePath));
+            bitmap.compress(CompressFormat.JPEG, quality, bos);
+            bos.flush();
+            bos.close();
+            if (ctx != null) {
+                scanPhoto(ctx, filePath);
             }
         }
-        Bitmap bitmap;
-        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            bitmap = Bitmap.createBitmap(1, 1,
-                    drawable.getOpacity() != PixelFormat.OPAQUE
-                            ? Bitmap.Config.ARGB_8888
-                            : Bitmap.Config.RGB_565);
-        } else {
-            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                    drawable.getIntrinsicHeight(),
-                    drawable.getOpacity() != PixelFormat.OPAQUE
-                            ? Bitmap.Config.ARGB_8888
-                            : Bitmap.Config.RGB_565);
+    }
+
+    public static void saveBackgroundImage(Context ctx, String filePath,
+                                           Bitmap bitmap, int quality) throws IOException {
+        if (bitmap != null) {
+            File file = new File(filePath.substring(0,
+                    filePath.lastIndexOf(File.separator)));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream(filePath));
+            bitmap.compress(CompressFormat.PNG, quality, bos);
+            bos.flush();
+            bos.close();
+            if (ctx != null) {
+                scanPhoto(ctx, filePath);
+            }
         }
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        return bitmap;
     }
 
     /**
-     * Bitmap to drawable.
-     *
-     * @param bitmap The bitmap.
-     * @return drawable
+     * 让Gallery上能马上看到该图片
      */
-    public static Drawable bitmap2Drawable(final Bitmap bitmap) {
-        return bitmap == null ? null : new BitmapDrawable(Utils.getApp().getResources(), bitmap);
+    private static void scanPhoto(Context ctx, String imgFileName) {
+        Intent mediaScanIntent = new Intent(
+                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File file = new File(imgFileName);
+        Uri contentUri = Uri.fromFile(file);
+        mediaScanIntent.setData(contentUri);
+        ctx.sendBroadcast(mediaScanIntent);
     }
 
     /**
-     * Drawable to bytes.
-     *
-     * @param drawable The drawable.
-     * @param format   The format of bitmap.
-     * @return bytes
+     * 获取bitmap
+     * 
+     * @param context
+     * @param fileName
+     * @return
      */
-    public static byte[] drawable2Bytes(final Drawable drawable, final CompressFormat format) {
-        return drawable == null ? null : bitmap2Bytes(drawable2Bitmap(drawable), format);
-    }
-
-    /**
-     * Bytes to drawable.
-     *
-     * @param bytes The bytes.
-     * @return drawable
-     */
-    public static Drawable bytes2Drawable(final byte[] bytes) {
-        return bitmap2Drawable(bytes2Bitmap(bytes));
-    }
-
-    /**
-     * View to bitmap.
-     *
-     * @param view The view.
-     * @return bitmap
-     */
-    public static Bitmap view2Bitmap(final View view) {
-        if (view == null) {
-            return null;
-        }
-        Bitmap ret = Bitmap.createBitmap(view.getWidth(),
-                view.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(ret);
-        Drawable bgDrawable = view.getBackground();
-        if (bgDrawable != null) {
-            bgDrawable.draw(canvas);
-        } else {
-            canvas.drawColor(Color.WHITE);
-        }
-        view.draw(canvas);
-        return ret;
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param file The file.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final File file) {
-        if (file == null) {
-            return null;
-        }
-        return BitmapFactory.decodeFile(file.getAbsolutePath());
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param file      The file.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final File file, final int maxWidth, final int maxHeight) {
-        if (file == null) {
-            return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param filePath The path of file.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final String filePath) {
-        if (isSpace(filePath)) {
-            return null;
-        }
-        return BitmapFactory.decodeFile(filePath);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param filePath  The path of file.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final String filePath, final int maxWidth, final int maxHeight) {
-        if (isSpace(filePath)) {
-            return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(filePath, options);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param is The input stream.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final InputStream is) {
-        if (is == null) {
-            return null;
-        }
-        return BitmapFactory.decodeStream(is);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param is        The input stream.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final InputStream is, final int maxWidth, final int maxHeight) {
-        if (is == null) {
-            return null;
-        }
-        byte[] bytes = input2Byte(is);
-        return getBitmap(bytes, 0, maxWidth, maxHeight);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param data   The data.
-     * @param offset The offset.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final byte[] data, final int offset) {
-        if (data.length == 0) {
-            return null;
-        }
-        return BitmapFactory.decodeByteArray(data, offset, data.length);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param data      The data.
-     * @param offset    The offset.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final byte[] data,
-                                   final int offset,
-                                   final int maxWidth,
-                                   final int maxHeight) {
-        if (data.length == 0) {
-            return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(data, offset, data.length, options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeByteArray(data, offset, data.length, options);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param resId The resource id.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(@DrawableRes final int resId) {
-        Drawable drawable = ContextCompat.getDrawable(Utils.getApp(), resId);
-        Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(),
-                Bitmap.Config.ARGB_8888);
-        canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        drawable.draw(canvas);
-        return bitmap;
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param resId     The resource id.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(@DrawableRes final int resId,
-                                   final int maxWidth,
-                                   final int maxHeight) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        final Resources resources = Utils.getApp().getResources();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(resources, resId, options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(resources, resId, options);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param fd The file descriptor.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final FileDescriptor fd) {
-        if (fd == null) {
-            return null;
-        }
-        return BitmapFactory.decodeFileDescriptor(fd);
-    }
-
-    /**
-     * Return bitmap.
-     *
-     * @param fd        The file descriptor
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return bitmap
-     */
-    public static Bitmap getBitmap(final FileDescriptor fd,
-                                   final int maxWidth,
-                                   final int maxHeight) {
-        if (fd == null) {
-            return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFileDescriptor(fd, null, options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFileDescriptor(fd, null, options);
-    }
-
-    /**
-     * Return the bitmap with the specified color.
-     *
-     * @param src   The source of bitmap.
-     * @param color The color.
-     * @return the bitmap with the specified color
-     */
-    public static Bitmap drawColor(@NonNull final Bitmap src, @ColorInt final int color) {
-        return drawColor(src, color, false);
-    }
-
-    /**
-     * Return the bitmap with the specified color.
-     *
-     * @param src     The source of bitmap.
-     * @param color   The color.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the bitmap with the specified color
-     */
-    public static Bitmap drawColor(@NonNull final Bitmap src,
-                                   @ColorInt final int color,
-                                   final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = recycle ? src : src.copy(src.getConfig(), true);
-        Canvas canvas = new Canvas(ret);
-        canvas.drawColor(color, PorterDuff.Mode.DARKEN);
-        return ret;
-    }
-
-    /**
-     * Return the scaled bitmap.
-     *
-     * @param src       The source of bitmap.
-     * @param newWidth  The new width.
-     * @param newHeight The new height.
-     * @return the scaled bitmap
-     */
-    public static Bitmap scale(final Bitmap src, final int newWidth, final int newHeight) {
-        return scale(src, newWidth, newHeight, false);
-    }
-
-    /**
-     * Return the scaled bitmap.
-     *
-     * @param src       The source of bitmap.
-     * @param newWidth  The new width.
-     * @param newHeight The new height.
-     * @param recycle   True to recycle the source of bitmap, false otherwise.
-     * @return the scaled bitmap
-     */
-    public static Bitmap scale(final Bitmap src,
-                               final int newWidth,
-                               final int newHeight,
-                               final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = Bitmap.createScaledBitmap(src, newWidth, newHeight, true);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the scaled bitmap
-     *
-     * @param src         The source of bitmap.
-     * @param scaleWidth  The scale of width.
-     * @param scaleHeight The scale of height.
-     * @return the scaled bitmap
-     */
-    public static Bitmap scale(final Bitmap src, final float scaleWidth, final float scaleHeight) {
-        return scale(src, scaleWidth, scaleHeight, false);
-    }
-
-    /**
-     * Return the scaled bitmap
-     *
-     * @param src         The source of bitmap.
-     * @param scaleWidth  The scale of width.
-     * @param scaleHeight The scale of height.
-     * @param recycle     True to recycle the source of bitmap, false otherwise.
-     * @return the scaled bitmap
-     */
-    public static Bitmap scale(final Bitmap src,
-                               final float scaleWidth,
-                               final float scaleHeight,
-                               final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Matrix matrix = new Matrix();
-        matrix.setScale(scaleWidth, scaleHeight);
-        Bitmap ret = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the clipped bitmap.
-     *
-     * @param src    The source of bitmap.
-     * @param x      The x coordinate of the first pixel.
-     * @param y      The y coordinate of the first pixel.
-     * @param width  The width.
-     * @param height The height.
-     * @return the clipped bitmap
-     */
-    public static Bitmap clip(final Bitmap src,
-                              final int x,
-                              final int y,
-                              final int width,
-                              final int height) {
-        return clip(src, x, y, width, height, false);
-    }
-
-    /**
-     * Return the clipped bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param x       The x coordinate of the first pixel.
-     * @param y       The y coordinate of the first pixel.
-     * @param width   The width.
-     * @param height  The height.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the clipped bitmap
-     */
-    public static Bitmap clip(final Bitmap src,
-                              final int x,
-                              final int y,
-                              final int width,
-                              final int height,
-                              final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = Bitmap.createBitmap(src, x, y, width, height);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the skewed bitmap.
-     *
-     * @param src The source of bitmap.
-     * @param kx  The skew factor of x.
-     * @param ky  The skew factor of y.
-     * @return the skewed bitmap
-     */
-    public static Bitmap skew(final Bitmap src, final float kx, final float ky) {
-        return skew(src, kx, ky, 0, 0, false);
-    }
-
-    /**
-     * Return the skewed bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param kx      The skew factor of x.
-     * @param ky      The skew factor of y.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the skewed bitmap
-     */
-    public static Bitmap skew(final Bitmap src,
-                              final float kx,
-                              final float ky,
-                              final boolean recycle) {
-        return skew(src, kx, ky, 0, 0, recycle);
-    }
-
-    /**
-     * Return the skewed bitmap.
-     *
-     * @param src The source of bitmap.
-     * @param kx  The skew factor of x.
-     * @param ky  The skew factor of y.
-     * @param px  The x coordinate of the pivot point.
-     * @param py  The y coordinate of the pivot point.
-     * @return the skewed bitmap
-     */
-    public static Bitmap skew(final Bitmap src,
-                              final float kx,
-                              final float ky,
-                              final float px,
-                              final float py) {
-        return skew(src, kx, ky, px, py, false);
-    }
-
-    /**
-     * Return the skewed bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param kx      The skew factor of x.
-     * @param ky      The skew factor of y.
-     * @param px      The x coordinate of the pivot point.
-     * @param py      The y coordinate of the pivot point.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the skewed bitmap
-     */
-    public static Bitmap skew(final Bitmap src,
-                              final float kx,
-                              final float ky,
-                              final float px,
-                              final float py,
-                              final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Matrix matrix = new Matrix();
-        matrix.setSkew(kx, ky, px, py);
-        Bitmap ret = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the rotated bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param degrees The number of degrees.
-     * @param px      The x coordinate of the pivot point.
-     * @param py      The y coordinate of the pivot point.
-     * @return the rotated bitmap
-     */
-    public static Bitmap rotate(final Bitmap src,
-                                final int degrees,
-                                final float px,
-                                final float py) {
-        return rotate(src, degrees, px, py, false);
-    }
-
-    /**
-     * Return the rotated bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param degrees The number of degrees.
-     * @param px      The x coordinate of the pivot point.
-     * @param py      The y coordinate of the pivot point.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the rotated bitmap
-     */
-    public static Bitmap rotate(final Bitmap src,
-                                final int degrees,
-                                final float px,
-                                final float py,
-                                final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        if (degrees == 0) {
-            return src;
-        }
-        Matrix matrix = new Matrix();
-        matrix.setRotate(degrees, px, py);
-        Bitmap ret = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the rotated degree.
-     *
-     * @param filePath The path of file.
-     * @return the rotated degree
-     */
-    public static int getRotateDegree(final String filePath) {
+    public static Bitmap getBitmap(Context context, String fileName) {
+        FileInputStream fis = null;
+        Bitmap bitmap = null;
         try {
-            ExifInterface exifInterface = new ExifInterface(filePath);
-            int orientation = exifInterface.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-            );
-            switch (orientation) {
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    return 90;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    return 180;
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    return 270;
-                default:
-                    return 0;
-            }
-        } catch (IOException e) {
+            fis = context.openFileInput(fileName);
+            bitmap = BitmapFactory.decodeStream(fis);
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return -1;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (Exception e) {
+            }
         }
+        return bitmap;
     }
 
     /**
-     * Return the round bitmap.
-     *
-     * @param src The source of bitmap.
-     * @return the round bitmap
+     * 获取bitmap
+     * 
+     * @param filePath
+     * @return
      */
-    public static Bitmap toRound(final Bitmap src) {
-        return toRound(src, 0, 0, false);
+    public static Bitmap getBitmapByPath(String filePath) {
+        return getBitmapByPath(filePath, null);
     }
 
-    /**
-     * Return the round bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the round bitmap
-     */
-    public static Bitmap toRound(final Bitmap src, final boolean recycle) {
-        return toRound(src, 0, 0, recycle);
-    }
-
-    /**
-     * Return the round bitmap.
-     *
-     * @param src         The source of bitmap.
-     * @param borderSize  The size of border.
-     * @param borderColor The color of border.
-     * @return the round bitmap
-     */
-    public static Bitmap toRound(final Bitmap src,
-                                 @IntRange(from = 0) int borderSize,
-                                 @ColorInt int borderColor) {
-        return toRound(src, borderSize, borderColor, false);
-    }
-
-    /**
-     * Return the round bitmap.
-     *
-     * @param src         The source of bitmap.
-     * @param recycle     True to recycle the source of bitmap, false otherwise.
-     * @param borderSize  The size of border.
-     * @param borderColor The color of border.
-     * @return the round bitmap
-     */
-    public static Bitmap toRound(final Bitmap src,
-                                 @IntRange(from = 0) int borderSize,
-                                 @ColorInt int borderColor,
-                                 final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
+    public static Bitmap getBitmapByPath(String filePath,
+                                         BitmapFactory.Options opts) {
+        FileInputStream fis = null;
+        Bitmap bitmap = null;
+        try {
+            File file = new File(filePath);
+            fis = new FileInputStream(file);
+            bitmap = BitmapFactory.decodeStream(fis, null, opts);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (Exception e) {
+            }
         }
-        int width = src.getWidth();
-        int height = src.getHeight();
-        int size = Math.min(width, height);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Bitmap ret = Bitmap.createBitmap(width, height, src.getConfig());
-        float center = size / 2f;
-        RectF rectF = new RectF(0, 0, width, height);
-        rectF.inset((width - size) / 2f, (height - size) / 2f);
+        return bitmap;
+    }
+
+    /**
+     * 获取bitmap
+     * 
+     * @param file
+     * @return
+     */
+    public static Bitmap getBitmapByFile(File file) {
+        FileInputStream fis = null;
+        Bitmap bitmap = null;
+        try {
+            fis = new FileInputStream(file);
+            bitmap = BitmapFactory.decodeStream(fis);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (Exception e) {
+            }
+        }
+        return bitmap;
+    }
+
+    /**
+     * 使用当前时间戳拼接一个唯一的文件名
+     * 
+     * @param
+     * @return
+     */
+    public static String getTempFileName() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_SS");
+        String fileName = format.format(new Timestamp(System
+                .currentTimeMillis()));
+        return fileName;
+    }
+
+    /**
+     * 获取照相机使用的目录
+     *
+     * @return
+     */
+    public static String getCamerPath() {
+        return Environment.getExternalStorageDirectory() + File.separator
+                + "FounderNews" + File.separator;
+    }
+
+    /**
+     * 判断当前Url是否标准的content://样式，如果不是，则返回绝对路径
+     *
+     * @param
+     * @return
+     */
+    public static String getAbsolutePathFromNoStandardUri(Uri mUri) {
+        String filePath = null;
+
+        String mUriString = mUri.toString();
+        mUriString = Uri.decode(mUriString);
+
+        String pre1 = "file://" + SDCARD + File.separator;
+        String pre2 = "file://" + SDCARD_MNT + File.separator;
+
+        if (mUriString.startsWith(pre1)) {
+            filePath = Environment.getExternalStorageDirectory().getPath()
+                    + File.separator + mUriString.substring(pre1.length());
+        } else if (mUriString.startsWith(pre2)) {
+            filePath = Environment.getExternalStorageDirectory().getPath()
+                    + File.separator + mUriString.substring(pre2.length());
+        }
+        return filePath;
+    }
+
+    /**
+     * 通过uri获取文件的绝对路径
+     *
+     * @param uri
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public static String getAbsoluteImagePath(Activity context, Uri uri) {
+        String imagePath = "";
+        String[] proj = { MediaStore.Images.Media.DATA };
+        Cursor cursor = context.managedQuery(uri, proj, // Which columns to
+                                                        // return
+                null, // WHERE clause; which rows to return (all rows)
+                null, // WHERE clause selection arguments (none)
+                null); // Order-by clause (ascending by name)
+
+        if (cursor != null) {
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            if (cursor.getCount() > 0 && cursor.moveToFirst()) {
+                imagePath = cursor.getString(column_index);
+            }
+        }
+
+        return imagePath;
+    }
+
+    /**
+     * 获取图片缩略图 只有Android2.1以上版本支持
+     *
+     * @param imgName
+     * @param kind
+     *            MediaStore.Images.Thumbnails.MICRO_KIND
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public static Bitmap loadImgThumbnail(Activity context, String imgName,
+                                          int kind) {
+        Bitmap bitmap = null;
+
+        String[] proj = { MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME };
+
+        Cursor cursor = context.managedQuery(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
+                MediaStore.Images.Media.DISPLAY_NAME + "='" + imgName + "'",
+                null, null);
+
+        if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+            ContentResolver crThumb = context.getContentResolver();
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 1;
+            bitmap = MediaStore.Images.Thumbnails.getThumbnail(crThumb, cursor.getInt(0),
+                    kind, options);
+        }
+        return bitmap;
+    }
+
+    public static Bitmap loadImgThumbnail(String filePath, int w, int h) {
+        Bitmap bitmap = getBitmapByPath(filePath);
+        return zoomBitmap(bitmap, w, h);
+    }
+
+    /**
+     * 获取SD卡中最新图片路径
+     *
+     * @return
+     */
+    public static String getLatestImage(Activity context) {
+        String latestImage = null;
+        String[] items = { MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATA };
+        Cursor cursor = context.managedQuery(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, items, null,
+                null, MediaStore.Images.Media._ID + " desc");
+
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor
+                    .moveToNext()) {
+                latestImage = cursor.getString(1);
+                break;
+            }
+        }
+
+        return latestImage;
+    }
+
+    /**
+     * 计算缩放图片的宽高
+     *
+     * @param img_size
+     * @param square_size
+     * @return
+     */
+    public static int[] scaleImageSize(int[] img_size, int square_size) {
+        if (img_size[0] <= square_size && img_size[1] <= square_size)
+            return img_size;
+        double ratio = square_size
+                / (double) Math.max(img_size[0], img_size[1]);
+        return new int[] { (int) (img_size[0] * ratio),
+                (int) (img_size[1] * ratio) };
+    }
+
+    /**
+     * 创建缩略图
+     *
+     * @param context
+     * @param largeImagePath
+     *            原始大图路径
+     * @param thumbfilePath
+     *            输出缩略图路径
+     * @param square_size
+     *            输出图片宽度
+     * @param quality
+     *            输出图片质量
+     * @throws IOException
+     */
+    public static void createImageThumbnail(Context context,
+                                            String largeImagePath, String thumbfilePath, int square_size,
+                                            int quality) throws IOException {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = 1;
+        // 原始图片bitmap
+        Bitmap cur_bitmap = getBitmapByPath(largeImagePath, opts);
+
+        if (cur_bitmap == null)
+            return;
+
+        // 原始图片的高宽
+        int[] cur_img_size = new int[] { cur_bitmap.getWidth(),
+                cur_bitmap.getHeight() };
+        // 计算原始图片缩放后的宽高
+        int[] new_img_size = scaleImageSize(cur_img_size, square_size);
+        // 生成缩放后的bitmap
+        Bitmap thb_bitmap = zoomBitmap(cur_bitmap, new_img_size[0],
+                new_img_size[1]);
+        // 生成缩放后的图片文件
+        saveImageToSD(null, thumbfilePath, thb_bitmap, quality);
+    }
+
+    /**
+     * 放大缩小图片
+     *
+     * @param bitmap
+     * @param w
+     * @param h
+     * @return
+     */
+    public static Bitmap zoomBitmap(Bitmap bitmap, int w, int h) {
+        Bitmap newbmp = null;
+        if (bitmap != null) {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            Matrix matrix = new Matrix();
+            float scaleWidht = ((float) w / width);
+            float scaleHeight = ((float) h / height);
+            matrix.postScale(scaleWidht, scaleHeight);
+            newbmp = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix,
+                    true);
+        }
+        return newbmp;
+    }
+
+    public static Bitmap scaleBitmap(Bitmap bitmap) {
+        // 获取这个图片的宽和高
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        // 定义预转换成的图片的宽度和高度
+        int newWidth = 200;
+        int newHeight = 200;
+        // 计算缩放率，新尺寸除原始尺寸
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // 创建操作图片用的matrix对象
         Matrix matrix = new Matrix();
-        matrix.setTranslate(rectF.left, rectF.top);
-        if (width != height) {
-            matrix.preScale((float) size / width, (float) size / height);
-        }
-        BitmapShader shader = new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        shader.setLocalMatrix(matrix);
-        paint.setShader(shader);
-        Canvas canvas = new Canvas(ret);
-        canvas.drawRoundRect(rectF, center, center, paint);
-        if (borderSize > 0) {
-            paint.setShader(null);
-            paint.setColor(borderColor);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(borderSize);
-            float radius = center - borderSize / 2f;
-            canvas.drawCircle(width / 2f, height / 2f, radius, paint);
-        }
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
+        // 缩放图片动作
+        matrix.postScale(scaleWidth, scaleHeight);
+        // 旋转图片 动作
+        // matrix.postRotate(45);
+        // 创建新的图片
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height,
+                matrix, true);
+        return resizedBitmap;
     }
 
     /**
-     * Return the round corner bitmap.
+     * (缩放)重绘图片
      *
-     * @param src    The source of bitmap.
-     * @param radius The radius of corner.
-     * @return the round corner bitmap
+     * @param context
+     *            Activity
+     * @param bitmap
+     * @return
      */
-    public static Bitmap toRoundCorner(final Bitmap src, final float radius) {
-        return toRoundCorner(src, radius, 0, 0, false);
+    public static Bitmap reDrawBitMap(Activity context, Bitmap bitmap) {
+        DisplayMetrics dm = new DisplayMetrics();
+        context.getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int rHeight = dm.heightPixels;
+        int rWidth = dm.widthPixels;
+        // float rHeight=dm.heightPixels/dm.density+0.5f;
+        // float rWidth=dm.widthPixels/dm.density+0.5f;
+        // int height=bitmap.getScaledHeight(dm);
+        // int width = bitmap.getScaledWidth(dm);
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        float zoomScale;
+
+        /** 方式3 **/
+        if (width >= rWidth)
+            zoomScale = ((float) rWidth) / width;
+        else
+            zoomScale = 1.0f;
+        // 创建操作图片用的matrix对象
+        Matrix matrix = new Matrix();
+        // 缩放图片动作
+        matrix.postScale(zoomScale, zoomScale);
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return resizedBitmap;
     }
 
     /**
-     * Return the round corner bitmap.
+     * 将Drawable转化为Bitmap
      *
-     * @param src     The source of bitmap.
-     * @param radius  The radius of corner.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the round corner bitmap
+     * @param drawable
+     * @return
      */
-    public static Bitmap toRoundCorner(final Bitmap src,
-                                       final float radius,
-                                       final boolean recycle) {
-        return toRoundCorner(src, radius, 0, 0, recycle);
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, drawable
+                .getOpacity() != PixelFormat.OPAQUE ? Config.ARGB_8888
+                : Config.RGB_565);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+        return bitmap;
+
     }
 
     /**
-     * Return the round corner bitmap.
+     * 获得圆角图片的方法
      *
-     * @param src         The source of bitmap.
-     * @param radius      The radius of corner.
-     * @param borderSize  The size of border.
-     * @param borderColor The color of border.
-     * @return the round corner bitmap
+     * @param bitmap
+     * @param roundPx
+     *            一般设成14
+     * @return
      */
-    public static Bitmap toRoundCorner(final Bitmap src,
-                                       final float radius,
-                                       @IntRange(from = 0) int borderSize,
-                                       @ColorInt int borderColor) {
-        return toRoundCorner(src, radius, borderSize, borderColor, false);
-    }
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float roundPx) {
 
-    /**
-     * Return the round corner bitmap.
-     *
-     * @param src         The source of bitmap.
-     * @param radius      The radius of corner.
-     * @param borderSize  The size of border.
-     * @param borderColor The color of border.
-     * @param recycle     True to recycle the source of bitmap, false otherwise.
-     * @return the round corner bitmap
-     */
-    public static Bitmap toRoundCorner(final Bitmap src,
-                                       final float radius,
-                                       @IntRange(from = 0) int borderSize,
-                                       @ColorInt int borderColor,
-                                       final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        int width = src.getWidth();
-        int height = src.getHeight();
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Bitmap ret = Bitmap.createBitmap(width, height, src.getConfig());
-        BitmapShader shader = new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        paint.setShader(shader);
-        Canvas canvas = new Canvas(ret);
-        RectF rectF = new RectF(0, 0, width, height);
-        float halfBorderSize = borderSize / 2f;
-        rectF.inset(halfBorderSize, halfBorderSize);
-        canvas.drawRoundRect(rectF, radius, radius, paint);
-        if (borderSize > 0) {
-            paint.setShader(null);
-            paint.setColor(borderColor);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(borderSize);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            canvas.drawRoundRect(rectF, radius, radius, paint);
-        }
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
 
-    /**
-     * Return the round corner bitmap with border.
-     *
-     * @param src          The source of bitmap.
-     * @param borderSize   The size of border.
-     * @param color        The color of border.
-     * @param cornerRadius The radius of corner.
-     * @return the round corner bitmap with border
-     */
-    public static Bitmap addCornerBorder(final Bitmap src,
-                                         @IntRange(from = 1) final int borderSize,
-                                         @ColorInt final int color,
-                                         @FloatRange(from = 0) final float cornerRadius) {
-        return addBorder(src, borderSize, color, false, cornerRadius, false);
-    }
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
 
-    /**
-     * Return the round corner bitmap with border.
-     *
-     * @param src          The source of bitmap.
-     * @param borderSize   The size of border.
-     * @param color        The color of border.
-     * @param cornerRadius The radius of corner.
-     * @param recycle      True to recycle the source of bitmap, false otherwise.
-     * @return the round corner bitmap with border
-     */
-    public static Bitmap addCornerBorder(final Bitmap src,
-                                         @IntRange(from = 1) final int borderSize,
-                                         @ColorInt final int color,
-                                         @FloatRange(from = 0) final float cornerRadius,
-                                         final boolean recycle) {
-        return addBorder(src, borderSize, color, false, cornerRadius, recycle);
-    }
-
-    /**
-     * Return the round bitmap with border.
-     *
-     * @param src        The source of bitmap.
-     * @param borderSize The size of border.
-     * @param color      The color of border.
-     * @return the round bitmap with border
-     */
-    public static Bitmap addCircleBorder(final Bitmap src,
-                                         @IntRange(from = 1) final int borderSize,
-                                         @ColorInt final int color) {
-        return addBorder(src, borderSize, color, true, 0, false);
-    }
-
-    /**
-     * Return the round bitmap with border.
-     *
-     * @param src        The source of bitmap.
-     * @param borderSize The size of border.
-     * @param color      The color of border.
-     * @param recycle    True to recycle the source of bitmap, false otherwise.
-     * @return the round bitmap with border
-     */
-    public static Bitmap addCircleBorder(final Bitmap src,
-                                         @IntRange(from = 1) final int borderSize,
-                                         @ColorInt final int color,
-                                         final boolean recycle) {
-        return addBorder(src, borderSize, color, true, 0, recycle);
-    }
-
-    /**
-     * Return the bitmap with border.
-     *
-     * @param src          The source of bitmap.
-     * @param borderSize   The size of border.
-     * @param color        The color of border.
-     * @param isCircle     True to draw circle, false to draw corner.
-     * @param cornerRadius The radius of corner.
-     * @param recycle      True to recycle the source of bitmap, false otherwise.
-     * @return the bitmap with border
-     */
-    private static Bitmap addBorder(final Bitmap src,
-                                    @IntRange(from = 1) final int borderSize,
-                                    @ColorInt final int color,
-                                    final boolean isCircle,
-                                    final float cornerRadius,
-                                    final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = recycle ? src : src.copy(src.getConfig(), true);
-        int width = ret.getWidth();
-        int height = ret.getHeight();
-        Canvas canvas = new Canvas(ret);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
         paint.setColor(color);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(borderSize);
-        if (isCircle) {
-            float radius = Math.min(width, height) / 2f - borderSize / 2f;
-            canvas.drawCircle(width / 2f, height / 2f, radius, paint);
-        } else {
-            int halfBorderSize = borderSize >> 1;
-            RectF rectF = new RectF(halfBorderSize, halfBorderSize,
-                    width - halfBorderSize, height - halfBorderSize);
-            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
-        }
-        return ret;
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
     }
 
     /**
-     * Return the bitmap with reflection.
+     * 获得带倒影的图片方法
      *
-     * @param src              The source of bitmap.
-     * @param reflectionHeight The height of reflection.
-     * @return the bitmap with reflection
+     * @param bitmap
+     * @return
      */
-    public static Bitmap addReflection(final Bitmap src, final int reflectionHeight) {
-        return addReflection(src, reflectionHeight, false);
-    }
+    public static Bitmap createReflectionImageWithOrigin(Bitmap bitmap) {
+        final int reflectionGap = 4;
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-    /**
-     * Return the bitmap with reflection.
-     *
-     * @param src              The source of bitmap.
-     * @param reflectionHeight The height of reflection.
-     * @param recycle          True to recycle the source of bitmap, false otherwise.
-     * @return the bitmap with reflection
-     */
-    public static Bitmap addReflection(final Bitmap src,
-                                       final int reflectionHeight,
-                                       final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        final int REFLECTION_GAP = 0;
-        int srcWidth = src.getWidth();
-        int srcHeight = src.getHeight();
         Matrix matrix = new Matrix();
         matrix.preScale(1, -1);
-        Bitmap reflectionBitmap = Bitmap.createBitmap(src, 0, srcHeight - reflectionHeight,
-                srcWidth, reflectionHeight, matrix, false);
-        Bitmap ret = Bitmap.createBitmap(srcWidth, srcHeight + reflectionHeight, src.getConfig());
-        Canvas canvas = new Canvas(ret);
-        canvas.drawBitmap(src, 0, 0, null);
-        canvas.drawBitmap(reflectionBitmap, 0, srcHeight + REFLECTION_GAP, null);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        LinearGradient shader = new LinearGradient(
-                0, srcHeight,
-                0, ret.getHeight() + REFLECTION_GAP,
-                0x70FFFFFF,
-                0x00FFFFFF,
-                Shader.TileMode.MIRROR);
-        paint.setShader(shader);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-        canvas.drawRect(0, srcHeight + REFLECTION_GAP, srcWidth, ret.getHeight(), paint);
-        if (!reflectionBitmap.isRecycled()) {
-            reflectionBitmap.recycle();
-        }
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
 
-    /**
-     * Return the bitmap with text watermarking.
-     *
-     * @param src      The source of bitmap.
-     * @param content  The content of text.
-     * @param textSize The size of text.
-     * @param color    The color of text.
-     * @param x        The x coordinate of the first pixel.
-     * @param y        The y coordinate of the first pixel.
-     * @return the bitmap with text watermarking
-     */
-    public static Bitmap addTextWatermark(final Bitmap src,
-                                          final String content,
-                                          final int textSize,
-                                          @ColorInt final int color,
-                                          final float x,
-                                          final float y) {
-        return addTextWatermark(src, content, textSize, color, x, y, false);
-    }
+        Bitmap reflectionImage = Bitmap.createBitmap(bitmap, 0, height / 2,
+                width, height / 2, matrix, false);
 
-    /**
-     * Return the bitmap with text watermarking.
-     *
-     * @param src      The source of bitmap.
-     * @param content  The content of text.
-     * @param textSize The size of text.
-     * @param color    The color of text.
-     * @param x        The x coordinate of the first pixel.
-     * @param y        The y coordinate of the first pixel.
-     * @param recycle  True to recycle the source of bitmap, false otherwise.
-     * @return the bitmap with text watermarking
-     */
-    public static Bitmap addTextWatermark(final Bitmap src,
-                                          final String content,
-                                          final float textSize,
-                                          @ColorInt final int color,
-                                          final float x,
-                                          final float y,
-                                          final boolean recycle) {
-        if (isEmptyBitmap(src) || content == null) {
-            return null;
-        }
-        Bitmap ret = src.copy(src.getConfig(), true);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Canvas canvas = new Canvas(ret);
-        paint.setColor(color);
-        paint.setTextSize(textSize);
-        Rect bounds = new Rect();
-        paint.getTextBounds(content, 0, content.length(), bounds);
-        canvas.drawText(content, x, y + textSize, paint);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
+        Bitmap bitmapWithReflection = Bitmap.createBitmap(width,
+                (height + height / 2), Config.ARGB_8888);
 
-    /**
-     * Return the bitmap with image watermarking.
-     *
-     * @param src       The source of bitmap.
-     * @param watermark The image watermarking.
-     * @param x         The x coordinate of the first pixel.
-     * @param y         The y coordinate of the first pixel.
-     * @param alpha     The alpha of watermark.
-     * @return the bitmap with image watermarking
-     */
-    public static Bitmap addImageWatermark(final Bitmap src,
-                                           final Bitmap watermark,
-                                           final int x, final int y,
-                                           final int alpha) {
-        return addImageWatermark(src, watermark, x, y, alpha, false);
-    }
+        Canvas canvas = new Canvas(bitmapWithReflection);
+        canvas.drawBitmap(bitmap, 0, 0, null);
+        Paint deafalutPaint = new Paint();
+        canvas.drawRect(0, height, width, height + reflectionGap, deafalutPaint);
 
-    /**
-     * Return the bitmap with image watermarking.
-     *
-     * @param src       The source of bitmap.
-     * @param watermark The image watermarking.
-     * @param x         The x coordinate of the first pixel.
-     * @param y         The y coordinate of the first pixel.
-     * @param alpha     The alpha of watermark.
-     * @param recycle   True to recycle the source of bitmap, false otherwise.
-     * @return the bitmap with image watermarking
-     */
-    public static Bitmap addImageWatermark(final Bitmap src,
-                                           final Bitmap watermark,
-                                           final int x,
-                                           final int y,
-                                           final int alpha,
-                                           final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = src.copy(src.getConfig(), true);
-        if (!isEmptyBitmap(watermark)) {
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            Canvas canvas = new Canvas(ret);
-            paint.setAlpha(alpha);
-            canvas.drawBitmap(watermark, x, y, paint);
-        }
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
+        canvas.drawBitmap(reflectionImage, 0, height + reflectionGap, null);
 
-    /**
-     * Return the alpha bitmap.
-     *
-     * @param src The source of bitmap.
-     * @return the alpha bitmap
-     */
-    public static Bitmap toAlpha(final Bitmap src) {
-        return toAlpha(src, false);
-    }
-
-    /**
-     * Return the alpha bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the alpha bitmap
-     */
-    public static Bitmap toAlpha(final Bitmap src, final Boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = src.extractAlpha();
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the gray bitmap.
-     *
-     * @param src The source of bitmap.
-     * @return the gray bitmap
-     */
-    public static Bitmap toGray(final Bitmap src) {
-        return toGray(src, false);
-    }
-
-    /**
-     * Return the gray bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the gray bitmap
-     */
-    public static Bitmap toGray(final Bitmap src, final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
-        }
-        Bitmap ret = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
-        Canvas canvas = new Canvas(ret);
         Paint paint = new Paint();
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setSaturation(0);
-        ColorMatrixColorFilter colorMatrixColorFilter = new ColorMatrixColorFilter(colorMatrix);
-        paint.setColorFilter(colorMatrixColorFilter);
-        canvas.drawBitmap(src, 0, 0, paint);
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
+        LinearGradient shader = new LinearGradient(0, bitmap.getHeight(), 0,
+                bitmapWithReflection.getHeight() + reflectionGap, 0x70ffffff,
+                0x00ffffff, TileMode.CLAMP);
+        paint.setShader(shader);
+        // Set the Transfer mode to be porter duff and destination in
+        paint.setXfermode(new PorterDuffXfermode(Mode.DST_IN));
+        // Draw a rectangle using the paint with our linear gradient
+        canvas.drawRect(0, height, width, bitmapWithReflection.getHeight()
+                + reflectionGap, paint);
+
+        return bitmapWithReflection;
     }
 
     /**
-     * Return the blur bitmap fast.
-     * <p>zoom out, blur, zoom in</p>
+     * 将bitmap转化为drawable
      *
-     * @param src    The source of bitmap.
-     * @param scale  The scale(0...1).
-     * @param radius The radius(0...25).
-     * @return the blur bitmap
+     * @param bitmap
+     * @return
      */
-    public static Bitmap fastBlur(final Bitmap src,
-                                  @FloatRange(
-                                          from = 0, to = 1, fromInclusive = false
-                                  ) final float scale,
-                                  @FloatRange(
-                                          from = 0, to = 25, fromInclusive = false
-                                  ) final float radius) {
-        return fastBlur(src, scale, radius, false, false);
+    public static Drawable bitmapToDrawable(Bitmap bitmap) {
+        Drawable drawable = new BitmapDrawable(bitmap);
+        return drawable;
     }
 
     /**
-     * Return the blur bitmap fast.
-     * <p>zoom out, blur, zoom in</p>
+     * 获取图片类型
      *
-     * @param src    The source of bitmap.
-     * @param scale  The scale(0...1).
-     * @param radius The radius(0...25).
-     * @return the blur bitmap
+     * @param file
+     * @return
      */
-    public static Bitmap fastBlur(final Bitmap src,
-                                  @FloatRange(
-                                          from = 0, to = 1, fromInclusive = false
-                                  ) final float scale,
-                                  @FloatRange(
-                                          from = 0, to = 25, fromInclusive = false
-                                  ) final float radius,
-                                  final boolean recycle) {
-        return fastBlur(src, scale, radius, recycle, false);
-    }
-
-    /**
-     * Return the blur bitmap fast.
-     * <p>zoom out, blur, zoom in</p>
-     *
-     * @param src           The source of bitmap.
-     * @param scale         The scale(0...1).
-     * @param radius        The radius(0...25).
-     * @param recycle       True to recycle the source of bitmap, false otherwise.
-     * @param isReturnScale True to return the scale blur bitmap, false otherwise.
-     * @return the blur bitmap
-     */
-    public static Bitmap fastBlur(final Bitmap src,
-                                  @FloatRange(
-                                          from = 0, to = 1, fromInclusive = false
-                                  ) final float scale,
-                                  @FloatRange(
-                                          from = 0, to = 25, fromInclusive = false
-                                  ) final float radius,
-                                  final boolean recycle,
-                                  final boolean isReturnScale) {
-        if (isEmptyBitmap(src)) {
+    public static String getImageType(File file) {
+        if (file == null || !file.exists()) {
             return null;
         }
-        int width = src.getWidth();
-        int height = src.getHeight();
-        Matrix matrix = new Matrix();
-        matrix.setScale(scale, scale);
-        Bitmap scaleBitmap =
-                Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
-        Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.ANTI_ALIAS_FLAG);
-        Canvas canvas = new Canvas();
-        PorterDuffColorFilter filter = new PorterDuffColorFilter(
-                Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
-        paint.setColorFilter(filter);
-        canvas.scale(scale, scale);
-        canvas.drawBitmap(scaleBitmap, 0, 0, paint);
-        scaleBitmap = renderScriptBlur(scaleBitmap, radius, recycle);
-        if (scale == 1 || isReturnScale) {
-            if (recycle && !src.isRecycled() && scaleBitmap != src) {
-                src.recycle();
-            }
-            return scaleBitmap;
-        }
-        Bitmap ret = Bitmap.createScaledBitmap(scaleBitmap, width, height, true);
-        if (!scaleBitmap.isRecycled()) {
-            scaleBitmap.recycle();
-        }
-        if (recycle && !src.isRecycled() && ret != src) {
-            src.recycle();
-        }
-        return ret;
-    }
-
-    /**
-     * Return the blur bitmap using render script.
-     *
-     * @param src    The source of bitmap.
-     * @param radius The radius(0...25).
-     * @return the blur bitmap
-     */
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static Bitmap renderScriptBlur(final Bitmap src,
-                                          @FloatRange(
-                                                  from = 0, to = 25, fromInclusive = false
-                                          ) final float radius) {
-        return renderScriptBlur(src, radius, false);
-    }
-
-    /**
-     * Return the blur bitmap using render script.
-     *
-     * @param src     The source of bitmap.
-     * @param radius  The radius(0...25).
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the blur bitmap
-     */
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static Bitmap renderScriptBlur(final Bitmap src,
-                                          @FloatRange(
-                                                  from = 0, to = 25, fromInclusive = false
-                                          ) final float radius,
-                                          final boolean recycle) {
-        RenderScript rs = null;
-        Bitmap ret = recycle ? src : src.copy(src.getConfig(), true);
+        InputStream in = null;
         try {
-            rs = RenderScript.create(Utils.getApp());
-            rs.setMessageHandler(new RenderScript.RSMessageHandler());
-            Allocation input = Allocation.createFromBitmap(rs,
-                    ret,
-                    Allocation.MipmapControl.MIPMAP_NONE,
-                    Allocation.USAGE_SCRIPT);
-            Allocation output = Allocation.createTyped(rs, input.getType());
-            ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-            blurScript.setInput(input);
-            blurScript.setRadius(radius);
-            blurScript.forEach(output);
-            output.copyTo(ret);
-        } finally {
-            if (rs != null) {
-                rs.destroy();
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * Return the blur bitmap using stack.
-     *
-     * @param src    The source of bitmap.
-     * @param radius The radius(0...25).
-     * @return the blur bitmap
-     */
-    public static Bitmap stackBlur(final Bitmap src, final int radius) {
-        return stackBlur(src, radius, false);
-    }
-
-    /**
-     * Return the blur bitmap using stack.
-     *
-     * @param src     The source of bitmap.
-     * @param radius  The radius(0...25).
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the blur bitmap
-     */
-    public static Bitmap stackBlur(final Bitmap src, int radius, final boolean recycle) {
-        Bitmap ret = recycle ? src : src.copy(src.getConfig(), true);
-        if (radius < 1) {
-            radius = 1;
-        }
-        int w = ret.getWidth();
-        int h = ret.getHeight();
-
-        int[] pix = new int[w * h];
-        ret.getPixels(pix, 0, w, 0, 0, w, h);
-
-        int wm = w - 1;
-        int hm = h - 1;
-        int wh = w * h;
-        int div = radius + radius + 1;
-
-        int[] r = new int[wh];
-        int[] g = new int[wh];
-        int[] b = new int[wh];
-        int rsum, gsum, bsum, x, y, i, p, yp, yi, yw;
-        int[] vmin = new int[Math.max(w, h)];
-
-        int divsum = (div + 1) >> 1;
-        divsum *= divsum;
-        int[] dv = new int[256 * divsum];
-        for (i = 0; i < 256 * divsum; i++) {
-            dv[i] = (i / divsum);
-        }
-
-        yw = yi = 0;
-
-        int[][] stack = new int[div][3];
-        int stackpointer;
-        int stackstart;
-        int[] sir;
-        int rbs;
-        int r1 = radius + 1;
-        int routsum, goutsum, boutsum;
-        int rinsum, ginsum, binsum;
-
-        for (y = 0; y < h; y++) {
-            rinsum = ginsum = binsum = routsum = goutsum = boutsum = rsum = gsum = bsum = 0;
-            for (i = -radius; i <= radius; i++) {
-                p = pix[yi + Math.min(wm, Math.max(i, 0))];
-                sir = stack[i + radius];
-                sir[0] = (p & 0xff0000) >> 16;
-                sir[1] = (p & 0x00ff00) >> 8;
-                sir[2] = (p & 0x0000ff);
-                rbs = r1 - Math.abs(i);
-                rsum += sir[0] * rbs;
-                gsum += sir[1] * rbs;
-                bsum += sir[2] * rbs;
-                if (i > 0) {
-                    rinsum += sir[0];
-                    ginsum += sir[1];
-                    binsum += sir[2];
-                } else {
-                    routsum += sir[0];
-                    goutsum += sir[1];
-                    boutsum += sir[2];
-                }
-            }
-            stackpointer = radius;
-
-            for (x = 0; x < w; x++) {
-
-                r[yi] = dv[rsum];
-                g[yi] = dv[gsum];
-                b[yi] = dv[bsum];
-
-                rsum -= routsum;
-                gsum -= goutsum;
-                bsum -= boutsum;
-
-                stackstart = stackpointer - radius + div;
-                sir = stack[stackstart % div];
-
-                routsum -= sir[0];
-                goutsum -= sir[1];
-                boutsum -= sir[2];
-
-                if (y == 0) {
-                    vmin[x] = Math.min(x + radius + 1, wm);
-                }
-                p = pix[yw + vmin[x]];
-
-                sir[0] = (p & 0xff0000) >> 16;
-                sir[1] = (p & 0x00ff00) >> 8;
-                sir[2] = (p & 0x0000ff);
-
-                rinsum += sir[0];
-                ginsum += sir[1];
-                binsum += sir[2];
-
-                rsum += rinsum;
-                gsum += ginsum;
-                bsum += binsum;
-
-                stackpointer = (stackpointer + 1) % div;
-                sir = stack[(stackpointer) % div];
-
-                routsum += sir[0];
-                goutsum += sir[1];
-                boutsum += sir[2];
-
-                rinsum -= sir[0];
-                ginsum -= sir[1];
-                binsum -= sir[2];
-
-                yi++;
-            }
-            yw += w;
-        }
-        for (x = 0; x < w; x++) {
-            rinsum = ginsum = binsum = routsum = goutsum = boutsum = rsum = gsum = bsum = 0;
-            yp = -radius * w;
-            for (i = -radius; i <= radius; i++) {
-                yi = Math.max(0, yp) + x;
-
-                sir = stack[i + radius];
-
-                sir[0] = r[yi];
-                sir[1] = g[yi];
-                sir[2] = b[yi];
-
-                rbs = r1 - Math.abs(i);
-
-                rsum += r[yi] * rbs;
-                gsum += g[yi] * rbs;
-                bsum += b[yi] * rbs;
-
-                if (i > 0) {
-                    rinsum += sir[0];
-                    ginsum += sir[1];
-                    binsum += sir[2];
-                } else {
-                    routsum += sir[0];
-                    goutsum += sir[1];
-                    boutsum += sir[2];
-                }
-
-                if (i < hm) {
-                    yp += w;
-                }
-            }
-            yi = x;
-            stackpointer = radius;
-            for (y = 0; y < h; y++) {
-                // Preserve alpha channel: ( 0xff000000 & pix[yi] )
-                pix[yi] = (0xff000000 & pix[yi]) | (dv[rsum] << 16) | (dv[gsum] << 8) | dv[bsum];
-
-                rsum -= routsum;
-                gsum -= goutsum;
-                bsum -= boutsum;
-
-                stackstart = stackpointer - radius + div;
-                sir = stack[stackstart % div];
-
-                routsum -= sir[0];
-                goutsum -= sir[1];
-                boutsum -= sir[2];
-
-                if (x == 0) {
-                    vmin[y] = Math.min(y + r1, hm) * w;
-                }
-                p = x + vmin[y];
-
-                sir[0] = r[p];
-                sir[1] = g[p];
-                sir[2] = b[p];
-
-                rinsum += sir[0];
-                ginsum += sir[1];
-                binsum += sir[2];
-
-                rsum += rinsum;
-                gsum += ginsum;
-                bsum += binsum;
-
-                stackpointer = (stackpointer + 1) % div;
-                sir = stack[stackpointer];
-
-                routsum += sir[0];
-                goutsum += sir[1];
-                boutsum += sir[2];
-
-                rinsum -= sir[0];
-                ginsum -= sir[1];
-                binsum -= sir[2];
-
-                yi += w;
-            }
-        }
-        ret.setPixels(pix, 0, w, 0, 0, w, h);
-        return ret;
-    }
-
-    /**
-     * Save the bitmap.
-     *
-     * @param src      The source of bitmap.
-     * @param filePath The path of file.
-     * @param format   The format of the image.
-     * @return {@code true}: success<br>{@code false}: fail
-     */
-    public static boolean save(final Bitmap src,
-                               final String filePath,
-                               final CompressFormat format) {
-        return save(src, getFileByPath(filePath), format, false);
-    }
-
-    /**
-     * Save the bitmap.
-     *
-     * @param src    The source of bitmap.
-     * @param file   The file.
-     * @param format The format of the image.
-     * @return {@code true}: success<br>{@code false}: fail
-     */
-    public static boolean save(final Bitmap src, final File file, final CompressFormat format) {
-        return save(src, file, format, false);
-    }
-
-    /**
-     * Save the bitmap.
-     *
-     * @param src      The source of bitmap.
-     * @param filePath The path of file.
-     * @param format   The format of the image.
-     * @param recycle  True to recycle the source of bitmap, false otherwise.
-     * @return {@code true}: success<br>{@code false}: fail
-     */
-    public static boolean save(final Bitmap src,
-                               final String filePath,
-                               final CompressFormat format,
-                               final boolean recycle) {
-        return save(src, getFileByPath(filePath), format, recycle);
-    }
-
-    /**
-     * Save the bitmap.
-     *
-     * @param src     The source of bitmap.
-     * @param file    The file.
-     * @param format  The format of the image.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return {@code true}: success<br>{@code false}: fail
-     */
-    public static boolean save(final Bitmap src,
-                               final File file,
-                               final CompressFormat format,
-                               final boolean recycle) {
-        if (isEmptyBitmap(src) || !createFileByDeleteOldFile(file)) {
-            return false;
-        }
-        OutputStream os = null;
-        boolean ret = false;
-        try {
-            os = new BufferedOutputStream(new FileOutputStream(file));
-            ret = src.compress(format, 100, os);
-            if (recycle && !src.isRecycled()) {
-                src.recycle();
-            }
+            in = new FileInputStream(file);
+            String type = getImageType(in);
+            return type;
         } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         } finally {
             try {
-                if (os != null) {
-                    os.close();
+                if (in != null) {
+                    in.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-        return ret;
     }
 
     /**
-     * Return whether it is a image according to the file name.
+     * 获取图片的类型信息
      *
-     * @param file The file.
-     * @return {@code true}: yes<br>{@code false}: no
+     * @param in
+     * @return
+     * @see #getImageType(byte[])
      */
-    public static boolean isImage(final File file) {
-        if (file == null || !file.exists()) {
-            return false;
-        }
-        return isImage(file.getPath());
-    }
-
-    /**
-     * Return whether it is a image according to the file name.
-     *
-     * @param filePath The path of file.
-     * @return {@code true}: yes<br>{@code false}: no
-     */
-    public static boolean isImage(final String filePath) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        try {
-            Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
-            return options.outWidth != -1 && options.outHeight != -1;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Return the type of image.
-     *
-     * @param filePath The path of file.
-     * @return the type of image
-     */
-    public static String getImageType(final String filePath) {
-        return getImageType(getFileByPath(filePath));
-    }
-
-    /**
-     * Return the type of image.
-     *
-     * @param file The file.
-     * @return the type of image
-     */
-    public static String getImageType(final File file) {
-        if (file == null) {
-            return "";
-        }
-        InputStream is = null;
-        try {
-            is = new FileInputStream(file);
-            String type = getImageType(is);
-            if (type != null) {
-                return type;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return getFileExtension(file.getAbsolutePath()).toUpperCase();
-    }
-
-    private static String getFileExtension(final String filePath) {
-        if (isSpace(filePath)) {
-            return filePath;
-        }
-        int lastPoi = filePath.lastIndexOf('.');
-        int lastSep = filePath.lastIndexOf(File.separator);
-        if (lastPoi == -1 || lastSep >= lastPoi) {
-            return "";
-        }
-        return filePath.substring(lastPoi + 1);
-    }
-
-    private static String getImageType(final InputStream is) {
-        if (is == null) {
+    public static String getImageType(InputStream in) {
+        if (in == null) {
             return null;
         }
         try {
             byte[] bytes = new byte[8];
-            return is.read(bytes, 0, 8) != -1 ? getImageType(bytes) : null;
+            in.read(bytes);
+            return getImageType(bytes);
         } catch (IOException e) {
-            e.printStackTrace();
             return null;
         }
     }
 
-    private static String getImageType(final byte[] bytes) {
+    /**
+     * 获取图片的类型信息
+     *
+     * @param bytes
+     *            2~8 byte at beginning of the image file
+     * @return image mimetype or null if the file is not image
+     */
+    public static String getImageType(byte[] bytes) {
         if (isJPEG(bytes)) {
-            return "JPEG";
+            return "image/jpeg";
         }
         if (isGIF(bytes)) {
-            return "GIF";
+            return "image/gif";
         }
         if (isPNG(bytes)) {
-            return "PNG";
+            return "image/png";
         }
         if (isBMP(bytes)) {
-            return "BMP";
+            return "application/x-bmp";
         }
         return null;
     }
 
-    private static boolean isJPEG(final byte[] b) {
-        return b.length >= 2
-                && (b[0] == (byte) 0xFF) && (b[1] == (byte) 0xD8);
+    private static boolean isJPEG(byte[] b) {
+        if (b.length < 2) {
+            return false;
+        }
+        return (b[0] == (byte) 0xFF) && (b[1] == (byte) 0xD8);
     }
 
-    private static boolean isGIF(final byte[] b) {
-        return b.length >= 6
-                && b[0] == 'G' && b[1] == 'I'
-                && b[2] == 'F' && b[3] == '8'
+    private static boolean isGIF(byte[] b) {
+        if (b.length < 6) {
+            return false;
+        }
+        return b[0] == 'G' && b[1] == 'I' && b[2] == 'F' && b[3] == '8'
                 && (b[4] == '7' || b[4] == '9') && b[5] == 'a';
     }
 
-    private static boolean isPNG(final byte[] b) {
-        return b.length >= 8
-                && (b[0] == (byte) 137 && b[1] == (byte) 80
-                && b[2] == (byte) 78 && b[3] == (byte) 71
-                && b[4] == (byte) 13 && b[5] == (byte) 10
+    private static boolean isPNG(byte[] b) {
+        if (b.length < 8) {
+            return false;
+        }
+        return (b[0] == (byte) 137 && b[1] == (byte) 80 && b[2] == (byte) 78
+                && b[3] == (byte) 71 && b[4] == (byte) 13 && b[5] == (byte) 10
                 && b[6] == (byte) 26 && b[7] == (byte) 10);
     }
 
-    private static boolean isBMP(final byte[] b) {
-        return b.length >= 2
-                && (b[0] == 0x42) && (b[1] == 0x4d);
-    }
-
-    private static boolean isEmptyBitmap(final Bitmap src) {
-        return src == null || src.getWidth() == 0 || src.getHeight() == 0;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // about compress
-    ///////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Return the compressed bitmap using scale.
-     *
-     * @param src       The source of bitmap.
-     * @param newWidth  The new width.
-     * @param newHeight The new height.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByScale(final Bitmap src,
-                                         final int newWidth,
-                                         final int newHeight) {
-        return scale(src, newWidth, newHeight, false);
-    }
-
-    /**
-     * Return the compressed bitmap using scale.
-     *
-     * @param src       The source of bitmap.
-     * @param newWidth  The new width.
-     * @param newHeight The new height.
-     * @param recycle   True to recycle the source of bitmap, false otherwise.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByScale(final Bitmap src,
-                                         final int newWidth,
-                                         final int newHeight,
-                                         final boolean recycle) {
-        return scale(src, newWidth, newHeight, recycle);
-    }
-
-    /**
-     * Return the compressed bitmap using scale.
-     *
-     * @param src         The source of bitmap.
-     * @param scaleWidth  The scale of width.
-     * @param scaleHeight The scale of height.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByScale(final Bitmap src,
-                                         final float scaleWidth,
-                                         final float scaleHeight) {
-        return scale(src, scaleWidth, scaleHeight, false);
-    }
-
-    /**
-     * Return the compressed bitmap using scale.
-     *
-     * @param src         The source of bitmap.
-     * @param scaleWidth  The scale of width.
-     * @param scaleHeight The scale of height.
-     * @param recycle     True to recycle the source of bitmap, false otherwise.
-     * @return he compressed bitmap
-     */
-    public static Bitmap compressByScale(final Bitmap src,
-                                         final float scaleWidth,
-                                         final float scaleHeight,
-                                         final boolean recycle) {
-        return scale(src, scaleWidth, scaleHeight, recycle);
-    }
-
-    /**
-     * Return the compressed bitmap using quality.
-     *
-     * @param src     The source of bitmap.
-     * @param quality The quality.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByQuality(final Bitmap src,
-                                           @IntRange(from = 0, to = 100) final int quality) {
-        return compressByQuality(src, quality, false);
-    }
-
-    /**
-     * Return the compressed bitmap using quality.
-     *
-     * @param src     The source of bitmap.
-     * @param quality The quality.
-     * @param recycle True to recycle the source of bitmap, false otherwise.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByQuality(final Bitmap src,
-                                           @IntRange(from = 0, to = 100) final int quality,
-                                           final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
+    private static boolean isBMP(byte[] b) {
+        if (b.length < 2) {
+            return false;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        src.compress(CompressFormat.JPEG, quality, baos);
-        byte[] bytes = baos.toByteArray();
-        if (recycle && !src.isRecycled()) {
-            src.recycle();
-        }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        return (b[0] == 0x42) && (b[1] == 0x4d);
     }
 
     /**
-     * Return the compressed bitmap using quality.
+     * 获取图片路径
      *
-     * @param src         The source of bitmap.
-     * @param maxByteSize The maximum size of byte.
-     * @return the compressed bitmap
+     * @param uri
+     * @param
      */
-    public static Bitmap compressByQuality(final Bitmap src, final long maxByteSize) {
-        return compressByQuality(src, maxByteSize, false);
+    public static String getImagePath(Uri uri, Activity context) {
+
+        String[] projection = { MediaColumns.DATA };
+        Cursor cursor = context.getContentResolver().query(uri, projection,
+                null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int columIndex = cursor.getColumnIndexOrThrow(MediaColumns.DATA);
+            String ImagePath = cursor.getString(columIndex);
+            cursor.close();
+            return ImagePath;
+        }
+
+        return uri.toString();
     }
 
-    /**
-     * Return the compressed bitmap using quality.
-     *
-     * @param src         The source of bitmap.
-     * @param maxByteSize The maximum size of byte.
-     * @param recycle     True to recycle the source of bitmap, false otherwise.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressByQuality(final Bitmap src,
-                                           final long maxByteSize,
-                                           final boolean recycle) {
-        if (isEmptyBitmap(src) || maxByteSize <= 0) {
-            return null;
-        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        src.compress(CompressFormat.JPEG, 100, baos);
-        byte[] bytes;
-        if (baos.size() <= maxByteSize) {
-            bytes = baos.toByteArray();
-        } else {
-            baos.reset();
-            src.compress(CompressFormat.JPEG, 0, baos);
-            if (baos.size() >= maxByteSize) {
-                bytes = baos.toByteArray();
-            } else {
-                // find the best quality using binary search
-                int st = 0;
-                int end = 100;
-                int mid = 0;
-                while (st < end) {
-                    mid = (st + end) / 2;
-                    baos.reset();
-                    src.compress(CompressFormat.JPEG, mid, baos);
-                    int len = baos.size();
-                    if (len == maxByteSize) {
-                        break;
-                    } else if (len > maxByteSize) {
-                        end = mid - 1;
-                    } else {
-                        st = mid + 1;
+    static Bitmap bitmap = null;
+
+    public static Bitmap loadPicasaImageFromGalley(final Uri uri,
+                                                   final Activity context) {
+
+        String[] projection = { MediaColumns.DATA, MediaColumns.DISPLAY_NAME };
+        Cursor cursor = context.getContentResolver().query(uri, projection,
+                null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+
+            int columIndex = cursor.getColumnIndex(MediaColumns.DISPLAY_NAME);
+            if (columIndex != -1) {
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            bitmap = MediaStore.Images.Media
+                                    .getBitmap(context.getContentResolver(),
+                                            uri);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }
-                }
-                if (end == mid - 1) {
-                    baos.reset();
-                    src.compress(CompressFormat.JPEG, st, baos);
-                }
-                bytes = baos.toByteArray();
+                }).start();
             }
-        }
-        if (recycle && !src.isRecycled()) {
-            src.recycle();
-        }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-
-    /**
-     * Return the compressed bitmap using sample size.
-     *
-     * @param src        The source of bitmap.
-     * @param sampleSize The sample size.
-     * @return the compressed bitmap
-     */
-
-    public static Bitmap compressBySampleSize(final Bitmap src, final int sampleSize) {
-        return compressBySampleSize(src, sampleSize, false);
-    }
-
-    /**
-     * Return the compressed bitmap using sample size.
-     *
-     * @param src        The source of bitmap.
-     * @param sampleSize The sample size.
-     * @param recycle    True to recycle the source of bitmap, false otherwise.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressBySampleSize(final Bitmap src,
-                                              final int sampleSize,
-                                              final boolean recycle) {
-        if (isEmptyBitmap(src)) {
+            cursor.close();
+            return bitmap;
+        } else
             return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = sampleSize;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        src.compress(CompressFormat.JPEG, 100, baos);
-        byte[] bytes = baos.toByteArray();
-        if (recycle && !src.isRecycled()) {
-            src.recycle();
-        }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     }
 
-    /**
-     * Return the compressed bitmap using sample size.
-     *
-     * @param src       The source of bitmap.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return the compressed bitmap
-     */
-    public static Bitmap compressBySampleSize(final Bitmap src,
-                                              final int maxWidth,
-                                              final int maxHeight) {
-        return compressBySampleSize(src, maxWidth, maxHeight, false);
-    }
+    /******************************************************************/
 
     /**
-     * Return the compressed bitmap using sample size.
+     * 压缩Bitmap,同时使用两种策略压缩,先压缩宽高，再压缩质量
      *
-     * @param src       The source of bitmap.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @param recycle   True to recycle the source of bitmap, false otherwise.
-     * @return the compressed bitmap
+     * @return 存储Bitmap的文件
+     * @throws IOException
      */
-    public static Bitmap compressBySampleSize(final Bitmap src,
-                                              final int maxWidth,
-                                              final int maxHeight,
-                                              final boolean recycle) {
-        if (isEmptyBitmap(src)) {
-            return null;
+    public static File compressBitmap(String url, String storageDir, String prefix) throws IOException {
+        if (!TextUtils.isEmpty(url)) {
+            File img = new File(url);
+            Bitmap bitmap = revitionImageSize(img);
+            bitmap = compressImage(bitmap);
+            return convertToFile(bitmap, storageDir, prefix);
         }
+        return null;
+    }
+
+
+    /**
+     * 使用矩阵缩放图片至期待的宽高
+     *
+     * @param source       被缩放的图片
+     * @param expectWidth  期待的宽
+     * @param expectHeight 期待的高
+     * @return 返回压缩后的图片
+     */
+    public static Bitmap zoomBitmap(Bitmap source, float expectWidth, float expectHeight) {
+        // 获取这个图片的宽和高
+        float width = source.getWidth();
+        float height = source.getHeight();
+        // 创建操作图片用的matrix对象
+        Matrix matrix = new Matrix();
+        //默认不缩放
+        float scaleWidth = 1;
+        float scaleHeight = 1;
+        // 计算宽高缩放率
+        if (expectWidth < width) {
+            scaleWidth = ((float) expectWidth) / width;
+        }
+        if (expectHeight < height) {
+            scaleHeight = ((float) expectHeight) / height;
+        }
+        // 缩放图片动作
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap bitmap = Bitmap.createBitmap(source, 0, 0, (int) width,
+                (int) height, matrix, true);
+        return bitmap;
+    }
+
+    //压缩图片大小
+    public static Bitmap revitionImageSize(File file) throws IOException {
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(in, null, options);
+        in.close();
+        int i = 1;
+        Bitmap bitmap = null;
+        while (true) {
+            if (((options.outWidth / i) <= 600)
+                    && ((options.outHeight / i) <= 600)) {
+                in = new BufferedInputStream(
+                        new FileInputStream(file));
+                options.inSampleSize = i;
+                options.inJustDecodeBounds = false;
+                bitmap = BitmapFactory.decodeStream(in, null, options);
+                break;
+            }
+            i += 1;
+        }
+        return bitmap;
+    }
+
+
+    //压缩图片质量
+    public static Bitmap compressImage(Bitmap image) {
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        src.compress(CompressFormat.JPEG, 100, baos);
-        byte[] bytes = baos.toByteArray();
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
-        options.inJustDecodeBounds = false;
-        if (recycle && !src.isRecycled()) {
-            src.recycle();
+        image.compress(CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        int offset = 100;
+        while (baos.toByteArray().length / 1024 > MAX_SIZE) {  //循环判断如果压缩后图片是否大于200kb,大于继续压缩
+
+            baos.reset();//重置baos即清空baos
+            image.compress(CompressFormat.JPEG, offset, baos);//这里压缩options%，把压缩后的数据存放到baos中
+            offset -= 10;//每次都减少10
         }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());
+        //把压缩后的数据baos存放到ByteArrayInputStream中
+        Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
+        return bitmap;
     }
 
     /**
-     * Return the size of bitmap.
+     * 将bitmap写入一个file中
      *
-     * @param filePath The path of file.
-     * @return the size of bitmap
+     * @return 保存bitmap的file对象
      */
-    public static int[] getSize(String filePath) {
-        return getSize(getFileByPath(filePath));
+    public static File convertToFile(Bitmap bitmap, String storageDir, String prefix) throws IOException {
+        File cacheDir = checkTargetCacheDir(storageDir);
+        //以时间戳生成一个临时文件名称
+        cacheDir = createFile(cacheDir, prefix, ".jpg");
+        boolean created = false;//是否创建成功,默认没有创建
+        if (!cacheDir.exists()) created = cacheDir.createNewFile();
+        if (created)//将图片写入目标file,100表示不压缩,Note:png是默认忽略这个参数的
+            bitmap.compress(CompressFormat.PNG, 100, new FileOutputStream(cacheDir));
+        return cacheDir;
     }
 
     /**
-     * Return the size of bitmap.
+     * 检查目标缓存目录是否存在，如果存在则返回这个目录，如果不存在则新建这个目录
      *
-     * @param file The file.
-     * @return the size of bitmap
+     * @return
      */
-    public static int[] getSize(File file) {
-        if (file == null) {
-            return new int[]{0, 0};
+    public static File checkTargetCacheDir(String storageDir) {
+
+        File file = null;
+        file = new File(storageDir);
+
+        if (!file.exists()) {
+            file.mkdirs();//创建目录
         }
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
-        return new int[]{opts.outWidth, opts.outHeight};
+
+        if (file != null && file.exists())
+            return file;//文件已经被成功创建
+        else {
+            return null;//即时经过以上检查，文件还是没有被准确的创建
+        }
     }
 
     /**
-     * Return the sample size.
-     *
-     * @param options   The options.
-     * @param maxWidth  The maximum width.
-     * @param maxHeight The maximum height.
-     * @return the sample size
+     * 根据系统时间、前缀、后缀产生一个文件
      */
-    private static int calculateInSampleSize(final BitmapFactory.Options options,
-                                             final int maxWidth,
-                                             final int maxHeight) {
-        int height = options.outHeight;
-        int width = options.outWidth;
-        int inSampleSize = 1;
-        while (height > maxHeight || width > maxWidth) {
-            height >>= 1;
-            width >>= 1;
-            inSampleSize <<= 1;
-        }
-        return inSampleSize;
+    public static File createFile(File folder, String prefix, String suffix) {
+        if (!folder.exists() || !folder.isDirectory()) folder.mkdirs();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.CHINA);
+        String filename = prefix + dateFormat.format(new Date(System.currentTimeMillis())) + suffix;
+        return new File(folder, filename);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // other utils methods
-    ///////////////////////////////////////////////////////////////////////////
+//    /**
+//     * android图片压缩工具
+//     * 压缩多张图片 RxJava 方式
+//     */
+//    public static void compressWithRx(List<String> files, Observer observer) {
+//
+//        Luban.get(getContext())
+//                .load(files)
+//                .putGear(Luban.THIRD_GEAR)
+//                .asListObservable()
+//                .subscribeOn(Schedulers.computation())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnError(new Consumer<Throwable>() {
+//                    @Override
+//                    public void accept(Throwable throwable) throws Exception {
+//                        throwable.printStackTrace();
+//                    }
+//                })
+//                .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
+//                    @Override
+//                    public ObservableSource<? extends File> apply(Throwable throwable) throws Exception {
+//                        return Observable.empty();
+//                    }
+//                })
+//                .subscribe(observer);
+//    }
+//
+//    /**
+//     * android图片压缩工具
+//     * 压缩单张图片 RxJava 方式
+//     */
+//    public static void compressWithRx(String url, Consumer consumer) {
+//
+//        Luban.get(getContext())
+//                .load(url)
+//                .putGear(Luban.THIRD_GEAR)
+//                .asObservable()
+//                .subscribeOn(Schedulers.computation())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnError(new Consumer<Throwable>() {
+//                    @Override
+//                    public void accept(Throwable throwable) throws Exception {
+//                        throwable.printStackTrace();
+//                    }
+//                })
+//                .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends File>>() {
+//                    @Override
+//                    public ObservableSource<? extends File> apply(Throwable throwable) throws Exception {
+//                        return Observable.empty();
+//                    }
+//                })
+//                .subscribe(consumer);
+//    }
 
-    private static File getFileByPath(final String filePath) {
-        return isSpace(filePath) ? null : new File(filePath);
-    }
-
-    private static boolean createFileByDeleteOldFile(final File file) {
-        if (file == null) {
-            return false;
-        }
-        if (file.exists() && !file.delete()) {
-            return false;
-        }
-        if (!createOrExistsDir(file.getParentFile())) {
-            return false;
-        }
-        try {
-            return file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private static boolean createOrExistsDir(final File file) {
-        return file != null && (file.exists() ? file.isDirectory() : file.mkdirs());
-    }
-
-    private static boolean isSpace(final String s) {
-        if (s == null) {
-            return true;
-        }
-        for (int i = 0, len = s.length(); i < len; ++i) {
-            if (!Character.isWhitespace(s.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static byte[] input2Byte(final InputStream is) {
-        if (is == null) {
-            return null;
-        }
-        try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            byte[] b = new byte[1024];
-            int len;
-            while ((len = is.read(b, 0, 1024)) != -1) {
-                os.write(b, 0, len);
-            }
-            return os.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

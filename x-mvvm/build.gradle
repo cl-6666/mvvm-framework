@@ -17,9 +17,16 @@ android {
         consumerProguardFiles "consumer-rules.pro"
     }
 
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+
+
     dataBinding {
         enabled true
     }
+
 
     buildTypes {
         release {
@@ -48,12 +55,77 @@ dependencies {
     }
     api rootProject.ext.dependencies["annotations"]
 
+    //view
+    compileOnly rootProject.ext.dependencies["autolayout"]
 
-    implementation "androidx.fragment:fragment:1.2.5"
-    implementation rootProject.ext.dependencies["Jetpack-lifecycleRuntime"]
-    implementation rootProject.ext.dependencies["Jetpack-common"]
-    implementation rootProject.ext.dependencies["Jetpack-viewmodel"]
-    implementation rootProject.ext.dependencies["Jetpack-livedata"]
-    implementation rootProject.ext.dependencies["Jetpack-navigationRuntime"]
+    //rx
+    api rootProject.ext.dependencies["rxjava2"]
+    api(rootProject.ext.dependencies["rxandroid2"]) {
+        exclude module: 'rxjava'
+    }
+    api(rootProject.ext.dependencies["rxcache2"]) {
+        exclude module: 'rxjava'
+        exclude module: 'dagger'
+        exclude module: 'api'
+    }
+    implementation(rootProject.ext.dependencies["rxcache-jolyglot-gson"]) {
+        exclude module: 'gson'
+    }
+    api(rootProject.ext.dependencies["rxlifecycle2"]) {
+        exclude module: 'rxjava'
+        exclude module: 'jsr305'
+    }
+    api(rootProject.ext.dependencies["rxlifecycle2-android"]) {
+        exclude module: 'annotation'
+        exclude module: 'rxjava'
+        exclude module: 'rxandroid'
+        exclude module: 'rxlifecycle'
+    }
+    api(rootProject.ext.dependencies["rxpermissions2"]) {
+        exclude module: 'rxjava'
+        exclude module: 'annotation'
+    }
+    api rootProject.ext.dependencies['rxerrorhandler2']
+
+    //network
+    api(rootProject.ext.dependencies["retrofit"]) {
+        exclude module: 'okhttp'
+        exclude module: 'okio'
+    }
+    implementation(rootProject.ext.dependencies["retrofit-converter-gson"]) {
+        exclude module: 'gson'
+        exclude module: 'okhttp'
+        exclude module: 'okio'
+        exclude module: 'retrofit'
+    }
+    implementation(rootProject.ext.dependencies["retrofit-adapter-rxjava2"]) {
+        exclude module: 'rxjava'
+        exclude module: 'okhttp'
+        exclude module: 'retrofit'
+        exclude module: 'okio'
+    }
+    api rootProject.ext.dependencies["okhttp3"]
+    compileOnly rootProject.ext.dependencies["glide"]
+    annotationProcessor(rootProject.ext.dependencies["glide-compiler"]) {
+        exclude module: 'jsr305'
+    }
+
+    //tools
+    compileOnly rootProject.ext.dependencies["javax.annotation"]
+//    api rootProject.ext.dependencies["dagger2"]
+//    annotationProcessor rootProject.ext.dependencies["dagger2-compiler"]
+//    compileOnly rootProject.ext.dependencies["androideventbus"]
+//    compileOnly rootProject.ext.dependencies["eventbus"]
+    api rootProject.ext.dependencies["gson"]
+
+    //test
+    api rootProject.ext.dependencies["timber"]
+    api rootProject.ext.dependencies['rxbinding']
+
+    implementation rootProject.ext.dependencies["lifecycle-runtime"]
+    implementation rootProject.ext.dependencies["lifecycle-java8"]
+    implementation rootProject.ext.dependencies["lifecycle-viewmodel"]
+    implementation rootProject.ext.dependencies["lifecycle-livedata"]
+    implementation rootProject.ext.dependencies["navigation-runtime"]
 
 }

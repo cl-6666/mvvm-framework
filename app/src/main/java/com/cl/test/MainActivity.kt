@@ -1,20 +1,11 @@
 package com.cl.test
 
 import android.os.Bundle
-import com.cl.mvvm.base.MvvmActivity
-import com.cl.mvvm.jetpack.databinding.ui.page.DataBindingConfig
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : MvvmActivity() {
-
-
-    override fun getDataBindingConfig(): DataBindingConfig {
-        TODO("Not yet implemented")
-    }
+class MainActivity : AppCompatActivity() {
 
 
-    override fun initViewModel() {
-
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
