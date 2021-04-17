@@ -122,10 +122,10 @@ dependencies {
     api rootProject.ext.dependencies["timber"]
     api rootProject.ext.dependencies['rxbinding']
 
-    implementation rootProject.ext.dependencies["lifecycle-runtime"]
-    implementation rootProject.ext.dependencies["lifecycle-java8"]
-    implementation rootProject.ext.dependencies["lifecycle-viewmodel"]
-    implementation rootProject.ext.dependencies["lifecycle-livedata"]
-    implementation rootProject.ext.dependencies["navigation-runtime"]
+    api rootProject.ext.dependencies["lifecycle-runtime"]
+    api rootProject.ext.dependencies["lifecycle-java8"]
+    api rootProject.ext.dependencies["lifecycle-viewmodel"]
+    api rootProject.ext.dependencies["lifecycle-livedata"]
+    api rootProject.ext.dependencies["navigation-runtime"]
 
 }

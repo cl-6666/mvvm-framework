@@ -6,15 +6,15 @@ import com.cl.mvvm.BaseApplication;
 import com.cl.mvvm.crash.CaocConfig;
 import com.cl.mvvm.utils.KLog;
 import com.cl.test.BuildConfig;
-import com.cl.test.ui.MainActivity;
+import com.cl.test.mian.MainActivity;
 import com.cl.test.R;
+import com.squareup.leakcanary.LeakCanary;
 
 
 public class AppApplication extends BaseApplication {
 
 
     private static Application sInstance;
-
 
 
     @Override
@@ -25,9 +25,9 @@ public class AppApplication extends BaseApplication {
         //初始化全局异常崩溃
         initCrash();
         //内存泄漏检测
-//        if (!LeakCanary.isInAnalyzerProcess(this)) {
-//            LeakCanary.install(this);
-//        }
+        if (!LeakCanary.isInAnalyzerProcess(this)) {
+            LeakCanary.install(this);
+        }
     }
 
     private void initCrash() {
