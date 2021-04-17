@@ -14,6 +14,13 @@ android {
         versionCode rootProject.ext.android["versionCode"]
         versionName rootProject.ext.android["versionName"]
         testInstrumentationRunner rootProject.ext.dependencies["androidJUnitRunner"]
+
+        // 解决65536
+        multiDexEnabled true
+    }
+
+    dataBinding {
+        enabled = true
     }
 
     buildTypes {
