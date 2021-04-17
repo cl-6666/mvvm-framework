@@ -109,11 +109,11 @@ public final class DefaultErrorActivity extends AppCompatActivity {
         }
 
         Integer defaultErrorActivityDrawableId = config.getErrorDrawable();
-//        ImageView errorImageView = ((ImageView) findViewById(R.id.customactivityoncrash_error_activity_image));
+        ImageView errorImageView = ((ImageView) findViewById(R.id.customactivityoncrash_error_activity_image));
 
-//        if (defaultErrorActivityDrawableId != null) {
-//            errorImageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), defaultErrorActivityDrawableId, getTheme()));
-//        }
+        if (defaultErrorActivityDrawableId != null) {
+            errorImageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), defaultErrorActivityDrawableId, getTheme()));
+        }
     }
 
     private void copyErrorToClipboard() {
