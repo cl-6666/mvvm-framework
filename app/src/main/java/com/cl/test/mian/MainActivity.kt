@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil.setContentView
 import com.cl.mvvm.base.BaseMvvmActivity
+import com.cl.mvvm.utils.NetworkUtils
 import com.cl.test.BR
 import com.cl.test.R
 import com.cl.test.databinding.ActivityMainBinding
@@ -26,7 +27,8 @@ class MainActivity : BaseMvvmActivity<ActivityMainBinding, MainViewModel>() {
     }
 
     override fun bindData() {
-        Log.i("TAG","开始了。。。。。。")
+
+
     }
 
     override fun bindEvent() {

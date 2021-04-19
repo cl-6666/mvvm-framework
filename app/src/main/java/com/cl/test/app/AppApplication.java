@@ -7,7 +7,6 @@ import com.cl.mvvm.crash.CaocConfig;
 import com.cl.mvvm.utils.KLog;
 import com.cl.test.BuildConfig;
 import com.cl.test.mian.MainActivity;
-import com.cl.test.R;
 import com.squareup.leakcanary.LeakCanary;
 
 
@@ -38,7 +37,7 @@ public class AppApplication extends BaseApplication {
                 .showRestartButton(true) //是否显示重启按钮
                 .trackActivities(true) //是否跟踪Activity
                 .minTimeBetweenCrashesMs(2000) //崩溃的间隔时间(毫秒)
-                .errorDrawable(R.mipmap.ic_launcher) //错误图标
+                .errorDrawable(com.cl.mvvm.R.drawable.customactivityoncrash_error_image) //错误图标
                 .restartActivity(MainActivity.class) //重新启动后的activity
 //                .errorActivity(YourCustomErrorActivity.class) //崩溃后的错误activity
 //                .eventListener(new YourCustomEventListener()) //崩溃后的错误监听
