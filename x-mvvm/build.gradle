@@ -1,32 +1,19 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-
-    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
-    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+    namespace 'com.maxvision.mvvm'
+    compileSdk 33
 
     defaultConfig {
-        minSdkVersion rootProject.ext.android["minSdkVersion"]
-        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
-        versionCode rootProject.ext.android["versionCode"]
-        versionName rootProject.ext.android["versionName"]
+        minSdk 24
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
-
-    compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
-    }
-
-
-    dataBinding {
-        enabled true
-    }
-
 
     buildTypes {
         release {
@@ -35,97 +22,41 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding = true
+        dataBinding = true
     }
 }
 
 dependencies {
-    api(rootProject.ext.dependencies["legacy-support-v4"]) {
-        exclude module: 'annotation'
-        exclude module: 'coordinatorlayout'
-    }
-    //androidx
-    api(rootProject.ext.dependencies["appcompat"]) {
-        exclude module: 'annotation'
-    }
-    compileOnly rootProject.ext.dependencies["design"]
-    api(rootProject.ext.dependencies["recyclerview"]) {
-        exclude module: 'annotation'
-    }
-    api rootProject.ext.dependencies["annotations"]
-
-    //view
-    compileOnly rootProject.ext.dependencies["autolayout"]
-
-    //rx
-    api rootProject.ext.dependencies["rxjava2"]
-    api(rootProject.ext.dependencies["rxandroid2"]) {
-        exclude module: 'rxjava'
-    }
-    api(rootProject.ext.dependencies["rxcache2"]) {
-        exclude module: 'rxjava'
-        exclude module: 'dagger'
-        exclude module: 'api'
-    }
-    implementation(rootProject.ext.dependencies["rxcache-jolyglot-gson"]) {
-        exclude module: 'gson'
-    }
-    api(rootProject.ext.dependencies["rxlifecycle2"]) {
-        exclude module: 'rxjava'
-        exclude module: 'jsr305'
-    }
-    api(rootProject.ext.dependencies["rxlifecycle2-android"]) {
-        exclude module: 'annotation'
-        exclude module: 'rxjava'
-        exclude module: 'rxandroid'
-        exclude module: 'rxlifecycle'
-    }
-    api(rootProject.ext.dependencies["rxpermissions2"]) {
-        exclude module: 'rxjava'
-        exclude module: 'annotation'
-    }
-    api rootProject.ext.dependencies['rxerrorhandler2']
-
-    //network
-    api(rootProject.ext.dependencies["retrofit"]) {
-        exclude module: 'okhttp'
-        exclude module: 'okio'
-    }
-    implementation(rootProject.ext.dependencies["retrofit-converter-gson"]) {
-        exclude module: 'gson'
-        exclude module: 'okhttp'
-        exclude module: 'okio'
-        exclude module: 'retrofit'
-    }
-    implementation(rootProject.ext.dependencies["retrofit-adapter-rxjava2"]) {
-        exclude module: 'rxjava'
-        exclude module: 'okhttp'
-        exclude module: 'retrofit'
-        exclude module: 'okio'
-    }
-    api rootProject.ext.dependencies["okhttp3"]
-    compileOnly rootProject.ext.dependencies["glide"]
-    annotationProcessor(rootProject.ext.dependencies["glide-compiler"]) {
-        exclude module: 'jsr305'
-    }
-
-    //tools
-    compileOnly rootProject.ext.dependencies["javax.annotation"]
-//    api rootProject.ext.dependencies["dagger2"]
-//    annotationProcessor rootProject.ext.dependencies["dagger2-compiler"]
-//    compileOnly rootProject.ext.dependencies["androideventbus"]
-//    compileOnly rootProject.ext.dependencies["eventbus"]
-    api rootProject.ext.dependencies["gson"]
-
-    //test
-    api rootProject.ext.dependencies["timber"]
-    api rootProject.ext.dependencies['rxbinding']
-
-    api rootProject.ext.dependencies["lifecycle-runtime"]
-    api rootProject.ext.dependencies["lifecycle-java8"]
-    api rootProject.ext.dependencies["lifecycle-viewmodel"]
-    api rootProject.ext.dependencies["lifecycle-livedata"]
-    api rootProject.ext.dependencies["navigation-runtime"]
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    // 协程基础库
+//    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+//    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    //lifecycle
+    api 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0'
+    api 'androidx.lifecycle:lifecycle-common-java8:2.2.0'
+    api 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    // viewModel
+    api "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
+    api "androidx.fragment:fragment-ktx:1.5.6"
+    // liveData
+    api "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
+    //navigation
+    api 'androidx.navigation:navigation-fragment-ktx:2.3.5'
+    api 'androidx.navigation:navigation-ui-ktx:2.3.5'
+    //retrofit
+    api "com.squareup.retrofit2:retrofit:2.9.0"
+    api "com.squareup.retrofit2:converter-gson:2.9.0"
+    api 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
 
 }
