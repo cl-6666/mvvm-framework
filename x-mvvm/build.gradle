@@ -1,9 +1,11 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
 
-group='com.github.lilongweidev'
+group = 'com.github.jitpack'
+version = '1.0'
 
 android {
     namespace 'com.maxvision.mvvm'
@@ -38,7 +40,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
@@ -62,4 +63,19 @@ dependencies {
     api "com.squareup.retrofit2:converter-gson:2.9.0"
     api 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
 
+}
+
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.jitpack'
+                artifactId = 'android-example'
+                version = '1.0'
+            }
+        }
+    }
 }
