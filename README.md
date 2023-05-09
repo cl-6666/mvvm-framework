@@ -33,6 +33,15 @@ dependencies {
 ```  
 
 ## 使用介绍
+* 在你的项目，需要在 `build.gradle` 文件中加入
+``` gradle
+ buildFeatures {
+        viewBinding = true
+        dataBinding = true
+    }
+```
+* MainActivity简单使用介绍如下 
+
 ``` kotlin
   class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
 
@@ -53,6 +62,7 @@ dependencies {
     }
 }
 ```
+* MainViewModel简单使用介绍如下 
 
 ``` kotlin
 class MainViewModel : BaseViewModel() {
