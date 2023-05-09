@@ -12,7 +12,8 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
 - v1.0.0：(2021年4月15日)
   - 上线第一个版本，满足日常项目开发  
 
-
+## 效果图
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" alt="演示"/>  
 
 ## 项目依赖
 ``` Gradle
@@ -30,9 +31,6 @@ dependencies {
       implementation 'com.github.cl-6666:mvvm-framework:v2.0.11'
 }
 ```  
-## 效果图
-
-<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" alt="演示"/>  
 
 ## 使用介绍
 ``` kotlin
