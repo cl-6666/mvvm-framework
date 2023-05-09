@@ -13,6 +13,9 @@ class MainViewModel : BaseViewModel() {
     private var articleListData: MutableLiveData<Data> = MutableLiveData()
 
 
+    /**
+     * 网络请求
+     */
     fun apiArticleListData() {
         request({ apiService.getEntryAndExitData()},{
             articleListData.value=it
@@ -22,6 +25,9 @@ class MainViewModel : BaseViewModel() {
     }
 
 
+    /**
+     * 获取数据
+     */
     fun getArticleListData(): MutableLiveData<Data> {
         return articleListData
     }
