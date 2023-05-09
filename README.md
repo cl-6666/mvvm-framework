@@ -30,6 +30,54 @@ dependencies {
       implementation 'com.github.cl-6666:mvvm-framework:v2.0.11'
 }
 ```  
+## 效果图
+
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" alt="演示"/>  
 
 ## 使用介绍
------------正在完善当中------------
+``` kotlin
+  class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
+
+    private val mArticleListAdapter: ArticleListAdapter by lazy { ArticleListAdapter(arrayListOf()) }
+
+    override fun initView(savedInstanceState: Bundle?) {
+        mViewModel.apiArticleListData()
+        initRv()
+    }
+
+    private fun initRv() {
+        mDatabind.rvArticleList.init(LinearLayoutManager(this), mArticleListAdapter, false)
+
+        mViewModel.getArticleListData().observe(this) {
+            mArticleListAdapter.submitList(it.datas)
+            mArticleListAdapter.notifyDataSetChanged()
+        }
+    }
+}
+```
+
+``` kotlin
+class MainViewModel : BaseViewModel() {
+
+    private var articleListData: MutableLiveData<Data> = MutableLiveData()
+    
+    /**
+     * 网络请求
+     */
+    fun apiArticleListData() {
+        request({ apiService.getEntryAndExitData()},{
+            articleListData.value=it
+        },{
+            //失败
+        },true)
+    }
+
+
+    /**
+     * 获取数据
+     */
+    fun getArticleListData(): MutableLiveData<Data> {
+        return articleListData
+    }
+}
+```
