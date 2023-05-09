@@ -3,7 +3,7 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
 
 
 ## 版本更新历史：  
-[![](https://jitpack.io/v/cl-6666/serialPort.svg)](https://jitpack.io/#cl-6666/serialPort) 
+[![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
 
 - v2.0.11：(2023年05月01日)
   - 框架内部使用kotlin代码编写  
