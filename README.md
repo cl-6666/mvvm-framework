@@ -40,7 +40,20 @@ dependencies {
         dataBinding = true
     }
 ```
-* MainActivity简单使用介绍如下 
+* api接口定义
+``` kotlin
+interface ApiService {
+
+    /**
+     * 首页文章列表
+     */
+    @GET("article/list/0/json")
+    suspend fun getEntryAndExitData(): ApiResponse<Data>
+
+}
+```
+
+* Activity请求玩安卓api案例
 
 ``` kotlin
   class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
@@ -62,7 +75,7 @@ dependencies {
     }
 }
 ```
-* MainViewModel简单使用介绍如下 
+* ViewModel简单使用介绍如下 
 
 ``` kotlin
 class MainViewModel : BaseViewModel() {
