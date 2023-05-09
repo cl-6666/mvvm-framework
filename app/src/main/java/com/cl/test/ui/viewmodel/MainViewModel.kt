@@ -9,9 +9,7 @@ import com.maxvision.mvvm.ext.request
 
 class MainViewModel : BaseViewModel() {
 
-
     private var articleListData: MutableLiveData<Data> = MutableLiveData()
-
 
     /**
      * 网络请求
@@ -31,6 +29,4 @@ class MainViewModel : BaseViewModel() {
     fun getArticleListData(): MutableLiveData<Data> {
         return articleListData
     }
-
-
 }
