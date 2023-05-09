@@ -7,4 +7,31 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+
+
+
+    <color name="textHint">#999999</color>
+    <color name="colorAccent">#2196F3</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorBlack666">#666</color>
+    <color name="colorBlack333">#333</color>
+    <color name="windowBackground">#F5F5F5</color>
+    <color name="background">#d8d8d8</color>
+    <color name="backgroundeee">#eeeeee</color>
+    <color name="backgrounGrey">#CCCCCC</color>
+    <color name="texttipColor">#a0a0a0</color>
+    <color name="diverColoe">#cecece</color>
+    <color name="accent">#E91E63</color>
+    <color name="chinaHoliDay">#e10015</color>
+    <color name="a609BE5">#609BE5</color>
+    <color name="topic">#627984</color>
+    <color name="T_4D">#4D4D4D</color>
+    <color name="T_D9">#D9D9D9</color>
+    <color name="T_F2">#F2F2F2</color>
+    <color name="A6CDFF">#A6CDFF</color>
+
+    <!--浅灰色-->
+    <color name="T_99">#999999</color>
+    <color name="T_F6">#f6f6f6</color>
 </resources>

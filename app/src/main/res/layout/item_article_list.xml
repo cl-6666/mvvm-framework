@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:id="@+id/item_project_imageview"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="8dp"
+            android:background="@color/windowBackground"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@mipmap/ic_launcher" />
+
+        <TextView
+            android:id="@+id/item_project_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@+id/item_project_imageview"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/colorBlack333"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/item_project_imageview"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="我是标题" />
+
+        <TextView
+            android:id="@+id/item_project_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/item_project_title"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/item_project_imageview"
+            android:ellipsize="end"
+            android:includeFontPadding="true"
+            android:lineSpacingMultiplier="1.4"
+            android:maxLines="3"
+            android:textColor="@color/colorBlack666"
+            android:textSize="13dp"
+            app:layout_constraintStart_toStartOf="@+id/item_project_title"
+            app:layout_constraintTop_toBottomOf="@+id/item_project_title"
+            tools:text="谷歌mvvm快速开发框架" />
+
+        <TextView
+            android:id="@+id/item_project_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:textColor="@color/colorBlack666"
+            android:textSize="13dp"
+            app:layout_constraintBottom_toBottomOf="@+id/item_project_imageview"
+            app:layout_constraintStart_toStartOf="@+id/item_project_content"
+            tools:text="分类·项目" />
+
+        <TextView
+            android:id="@+id/item_project_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:textColor="@color/colorBlack666"
+            android:textSize="13dp"
+            app:layout_constraintBottom_toBottomOf="@+id/item_project_type"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="1小时前" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
+
+

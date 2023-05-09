@@ -4,6 +4,8 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import androidx.databinding.ViewDataBinding
+import com.cl.test.ext.dismissLoadingExt
+import com.cl.test.ext.showLoadingExt
 import com.maxvision.mvvm.base.fragment.BaseVmDbFragment
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
 
@@ -39,12 +41,14 @@ abstract class BaseFragment<VM : BaseViewModel, DB : ViewDataBinding> : BaseVmDb
      * 打开等待框
      */
     override fun showLoading(message: String) {
+        showLoadingExt(message)
     }
 
     /**
      * 关闭等待框
      */
     override fun dismissLoading() {
+        dismissLoadingExt()
     }
 
     override fun onPause() {
