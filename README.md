@@ -102,3 +102,12 @@ class MainViewModel : BaseViewModel() {
     }
 }
 ```
+## 常见问题
+* 当gradle-7.0以上，部分设备glide加载不出图片解决方法  
+``` xml
+    <application
+        ........
+        android:requestLegacyExternalStorage="true"
+        ........
+	>
+```
