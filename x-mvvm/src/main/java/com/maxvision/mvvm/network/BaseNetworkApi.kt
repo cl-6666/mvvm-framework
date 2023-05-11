@@ -1,5 +1,6 @@
 package com.maxvision.mvvm.network
 
+import com.maxvision.mvvm.util.HttpsCerUtils
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
@@ -10,7 +11,9 @@ import retrofit2.Retrofit
  */
 abstract class BaseNetworkApi {
 
-    fun <T> getApi(serviceClass: Class<T>, baseUrl: String): T {
+    fun <T> getApi(serviceClass: Class<T>, baseUrl: String,type: Boolean): T {
+        //根据type判断使用哪个okHttpClient
+        val okHttpClient = if (type) okHttpClientHttps else okHttpClient
         val retrofitBuilder = Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(okHttpClient)
@@ -38,6 +41,16 @@ abstract class BaseNetworkApi {
 //            var builder = RetrofitUrlManager.getInstance().with(OkHttpClient.Builder())
             builder = setHttpClientBuilder(builder)
             return builder.build()
+        }
+
+
+
+    /**
+     * 配置https,忽略证书模式
+     */
+    private val okHttpClientHttps: OkHttpClient
+        get() {
+            return HttpsCerUtils.trustAllCertificateClient
         }
 }
 
