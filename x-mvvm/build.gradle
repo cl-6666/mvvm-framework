@@ -55,9 +55,6 @@ dependencies {
     api "androidx.fragment:fragment-ktx:1.5.6"
     // liveData
     api "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
-    //navigation
-    api 'androidx.navigation:navigation-fragment-ktx:2.3.5'
-    api 'androidx.navigation:navigation-ui-ktx:2.3.5'
     //retrofit
     api "com.squareup.retrofit2:retrofit:2.9.0"
     api "com.squareup.retrofit2:converter-gson:2.9.0"

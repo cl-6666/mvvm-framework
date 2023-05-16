@@ -265,7 +265,7 @@ class DefaultFormatPrinter : FormatPrinter {
                     end = if (end > line.length) line.length else end
                     LogUtils.debugInfo(
                         resolveTag(tag),
-                        DEFAULT_LINE + line.substring(start, end)
+                        line.substring(start, end)
                     )
                 }
             }

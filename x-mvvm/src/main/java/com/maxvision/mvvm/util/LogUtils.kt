@@ -3,6 +3,10 @@ package com.maxvision.mvvm.util
 import android.text.TextUtils
 import android.util.Log
 import com.maxvision.mvvm.ext.util.jetpackMvvmLog
+import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * 作者　: cl
@@ -11,11 +15,21 @@ import com.maxvision.mvvm.ext.util.jetpackMvvmLog
  */
 object LogUtils {
     private const val DEFAULT_TAG = "JetpackMvvm"
+
+    /** 创建线程池来打印日志，解决出现大日志阻塞线程的情况  */
+    private val EXECUTOR = ThreadPoolExecutor(
+        1, 1,
+        0L, TimeUnit.MILLISECONDS, LinkedBlockingQueue(),
+        Executors.defaultThreadFactory(), ThreadPoolExecutor.DiscardPolicy()
+    )
+
     fun debugInfo(tag: String?, msg: String?) {
         if (!jetpackMvvmLog || TextUtils.isEmpty(msg)) {
             return
         }
-        Log.d(tag, msg!!)
+        EXECUTOR.execute {
+            Log.d(tag, msg!!)
+        }
     }
 
     fun debugInfo(msg: String?) {
