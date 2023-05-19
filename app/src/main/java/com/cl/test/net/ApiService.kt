@@ -1,7 +1,5 @@
 package com.cl.test.net
-import com.cl.test.bean.ArticleListBean
 import com.cl.test.bean.Data
-import com.cl.test.bean.DataX
 import retrofit2.http.*
 
 /**

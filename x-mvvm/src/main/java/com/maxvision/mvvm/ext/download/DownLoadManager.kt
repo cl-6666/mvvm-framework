@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import com.maxvision.mvvm.ext.util.logi
+import com.maxvision.mvvm.util.HttpsCerUtils
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import java.io.File
@@ -22,7 +23,7 @@ object DownLoadManager {
         Retrofit.Builder()
             .baseUrl("https://www.baidu.com")
             .client(
-                OkHttpClient.Builder()
+                HttpsCerUtils.trustAllCertificateClient.newBuilder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(5, TimeUnit.SECONDS)
                     .writeTimeout(5, TimeUnit.SECONDS).build()
@@ -143,7 +144,7 @@ object DownLoadManager {
         } else {
             ShareDownLoadUtil.getLong(tag, 0)
         }
-        if (file.exists()&&currentLength == 0L && !reDownload) {
+        if (file.exists() && currentLength == 0L && !reDownload) {
             //文件已存在了
             loadListener.onDownLoadSuccess(tag, file.path, file.length())
             return

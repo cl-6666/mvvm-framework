@@ -1,5 +1,6 @@
 package com.cl.test.net
 
+import android.util.Log
 import com.cl.test.Constants.Companion.BASE_URL
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
@@ -8,13 +9,14 @@ import com.google.gson.GsonBuilder
 import com.maxvision.mvvm.base.appContext
 import com.maxvision.mvvm.network.BaseNetworkApi
 import com.maxvision.mvvm.network.interceptor.CacheInterceptor
-import com.maxvision.mvvm.network.interceptor.logging.LogInterceptor
 import okhttp3.Cache
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.util.concurrent.TimeUnit
+
 
 /**
  * 作者　: cl
@@ -41,6 +43,17 @@ class NetworkApi : BaseNetworkApi() {
      * 在这里可以添加拦截器，可以对 OkHttpClient.Builder 做任意操作
      */
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
+
+
+        //下面是4.0.0版本的最新方法
+        //下面是4.0.0版本的最新方法
+        val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.e(
+                "下一页网络日志",
+                "XiaYiYe5:$message"
+            )
+        }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
             cache(Cache(File(appContext.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
@@ -54,7 +67,7 @@ class NetworkApi : BaseNetworkApi() {
             addInterceptor(CacheInterceptor())
             addInterceptor(TokenOutInterceptor())
             /** 演示日志拦截器 */
-            addInterceptor(LogInterceptor())
+            addInterceptor(httpLoggingInterceptor)
             /** 超时时间 连接、读、写 */
             connectTimeout(10, TimeUnit.SECONDS)
             readTimeout(5, TimeUnit.SECONDS)
