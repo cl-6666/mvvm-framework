@@ -59,6 +59,13 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
      * 在这里可以添加拦截器，可以对 OkHttpClient.Builder 做任意操作
      */
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
+         //下面是4.0.0版本的最新方法
+        val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.e(
+                "网络日志", message
+            )
+        }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
             cache(Cache(File(appContext.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
@@ -71,8 +78,8 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             /** 演示添加缓存拦截器 可传入缓存天数，不传默认7天 */
             addInterceptor(CacheInterceptor())
             addInterceptor(TokenOutInterceptor())
-            /** 演示日志拦截器 */
-            addInterceptor(LogInterceptor())
+            /** 演示日志拦截器 您也可以自定义网络日志 */
+            addInterceptor(httpLoggingInterceptor)
             /** 超时时间 连接、读、写 */
             connectTimeout(10, TimeUnit.SECONDS)
             readTimeout(5, TimeUnit.SECONDS)
