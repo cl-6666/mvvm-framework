@@ -1,23 +1,18 @@
-package com.cl.test.app;
+package com.cl.test.app
 
-import android.app.Application;
+import android.app.Application
+import com.hjq.toast.Toaster
 
-import com.hjq.toast.Toaster;
+class AppApplication : Application() {
 
-
-public class AppApplication extends Application {
-
-
-    private static Application sInstance;
-
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    override fun onCreate() {
+        super.onCreate()
 
         // 初始化 Toast 框架
-        Toaster.init(this);
+        Toaster.init(this)
     }
 
-
+    companion object {
+        private val sInstance: Application? = null
+    }
 }

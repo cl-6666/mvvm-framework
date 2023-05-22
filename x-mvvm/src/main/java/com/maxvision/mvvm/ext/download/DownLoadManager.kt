@@ -1,12 +1,12 @@
 package com.maxvision.mvvm.ext.download
 
 import android.os.Looper
+import com.maxvision.mvvm.ext.util.logi
+import com.maxvision.mvvm.util.HttpsCerUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import com.maxvision.mvvm.ext.util.logi
-import com.maxvision.mvvm.util.HttpsCerUtils
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import java.io.File
@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit
  * 描述　:下载管理类
  */
 object DownLoadManager {
-    private val retrofitBuilder by lazy {
+
+    /** 忽略https模式 */
+    private val retrofitBuilderHttps by lazy {
         Retrofit.Builder()
             .baseUrl("https://www.baidu.com")
             .client(
@@ -30,6 +32,19 @@ object DownLoadManager {
             ).build()
     }
 
+    /** 正常http模式 */
+    private val retrofitBuilder by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://www.baidu.com")
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .writeTimeout(5, TimeUnit.SECONDS).build()
+            ).build()
+    }
+
+
     /**
      *开始下载
      * @param tag String 标识
@@ -37,6 +52,7 @@ object DownLoadManager {
      * @param savePath String 保存的路径
      * @param saveName String 保存的名字
      * @param reDownload Boolean 如果文件已存在是否需要重新下载 默认不需要重新下载
+     * @param whetherHttps Boolean 默认不开启忽略https模式
      * @param loadListener OnDownLoadListener
      */
     suspend fun downLoad(
@@ -45,10 +61,11 @@ object DownLoadManager {
         savePath: String,
         saveName: String,
         reDownload: Boolean = false,
+        whetherHttps: Boolean=false,
         loadListener: OnDownLoadListener
     ) {
         withContext(Dispatchers.IO) {
-            doDownLoad(tag, url, savePath, saveName, reDownload, loadListener, this)
+            doDownLoad(tag, url, savePath, saveName, reDownload,whetherHttps, loadListener, this)
         }
     }
 
@@ -102,6 +119,7 @@ object DownLoadManager {
      * @param savePath String 保存的路径
      * @param saveName String 保存的名字
      * @param reDownload Boolean 如果文件已存在是否需要重新下载 默认不需要重新下载
+     * @param whetherHttps Boolean 是否是https模式
      * @param loadListener OnDownLoadListener
      * @param coroutineScope CoroutineScope 上下文
      */
@@ -111,6 +129,7 @@ object DownLoadManager {
         savePath: String,
         saveName: String,
         reDownload: Boolean,
+        whetherHttps : Boolean,
         loadListener: OnDownLoadListener,
         coroutineScope: CoroutineScope
     ) {
@@ -160,8 +179,15 @@ object DownLoadManager {
             withContext(Dispatchers.Main) {
                 loadListener.onDownLoadPrepare(key = tag)
             }
-            val response = retrofitBuilder.create(DownLoadService::class.java)
-                .downloadFile("bytes=$currentLength-", url)
+            val response = if (whetherHttps) {
+                retrofitBuilderHttps.create(DownLoadService::class.java)
+                    .downloadFile("bytes=$currentLength-", url)
+            } else {
+                retrofitBuilder.create(DownLoadService::class.java)
+                    .downloadFile("bytes=$currentLength-", url)
+            }
+//            val response = retrofitBuilder.create(DownLoadService::class.java)
+//                .downloadFile("bytes=$currentLength-", url)
             val responseBody = response.body()
             if (responseBody == null) {
                 "responseBody is null".logi()

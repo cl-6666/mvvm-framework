@@ -46,11 +46,9 @@ class NetworkApi : BaseNetworkApi() {
 
 
         //下面是4.0.0版本的最新方法
-        //下面是4.0.0版本的最新方法
         val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
             Log.e(
-                "下一页网络日志",
-                "XiaYiYe5:$message"
+                "网络日志", message
             )
         }
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
