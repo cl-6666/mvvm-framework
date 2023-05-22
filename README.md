@@ -4,6 +4,11 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
 
 ## 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
+
+- v2.0.16：(2023年05月11日)
+  - 增加下载模块适配https忽略
+  - 增加网络httpLoggingInterceptor日志显示  
+
 - v2.0.12：(2023年05月11日)
   - 增加网络缓存拦截器、公共heads、添加缓存拦截器等演示
   - 代码优化  
@@ -32,7 +37,7 @@ Step 2. Add the dependency
 
 ``` Gradle
 dependencies {
-      implementation 'com.github.cl-6666:mvvm-framework:v2.0.12'
+      implementation 'com.github.cl-6666:mvvm-framework:v2.0.16'
 }
 ```  
 
@@ -76,6 +81,54 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
         return builder
     }
 ```  
+* 网络下载模块介绍
+``` kotlin
+             //生成apk名字时间戳
+            val apkName = "inspection" + System.currentTimeMillis() + ".apk"
+            downLoad(
+                "TAG",
+                url,
+                FileUtil.getInstance().pluginRootPath,
+                apkName,
+                true,
+		true,  //是否开启忽略https   true-开启   默认不开启
+                object : OnDownLoadListener {
+                    override fun onDownLoadPrepare(key: String) {
+                        Log.i("TAG", "准备下载")
+                    }
+
+                    override fun onDownLoadError(
+                        key: String,
+                        throwable: Throwable
+                    ) {
+                        Log.i("TAG", "下载失败")
+                    }
+
+                    override fun onDownLoadSuccess(
+                        key: String,
+                        path: String,
+                        size: Long
+                    ) {
+                        Log.i("TAG", "下载成功"+apkName)
+                    }
+
+                    override fun onDownLoadPause(key: String) {
+                        Log.i("TAG", "下载暂停")
+                    }
+
+                    override fun onUpdate(
+                        key: String,
+                        progress: Int,
+                        read: Long,
+                        count: Long,
+                        done: Boolean
+                    ) {
+                        Log.i("TAG", "下载中")
+                    }
+                })
+
+```
+
 
 * api接口定义
 ``` kotlin
@@ -89,6 +142,29 @@ interface ApiService {
 
 }
 ```  
+
+* 网络返回格式  
+``` kotlin
+{
+    "data": ...,
+    "errorCode": 0,
+    "errorMsg": ""
+}
+```  
+该示例格式是 [玩Android Api](https://www.wanandroid.com/blog/show/2)返回的数据格式，如果errorCode等于0 请求成功，否则请求失败
+作为开发者的角度来说，我们主要是想得到脱壳数据-data，且不想每次都判断errorCode==0请求是否成功或失败
+这时我们可以在服务器返回数据基类中继承BaseResponse，实现相关方法：  
+
+``` kotlin
+data class ApiResponse<T>(var errorCode: Int, var errorMsg: String, var data: T) : BaseResponse<T>() {
+    // 这里是示例，wanandroid 网站返回的 错误码为 0 就代表请求成功，请你根据自己的业务需求来编写
+    override fun isSucces() = errorCode == 0
+    override fun getResponseCode() = errorCode
+    override fun getResponseData() = data
+    override fun getResponseMsg() = errorMsg
+}
+```
+
 
 ### 谷歌Jetpack框架使用介绍  
 
