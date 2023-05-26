@@ -13,12 +13,11 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
   - 增加网络缓存拦截器、公共heads、添加缓存拦截器等演示
   - 代码优化  
 
-- v2.0.11：(2023年05月01日)
+- v1.0.1：(2023年05月01日)
+  - 上线第一个版本，满足日常项目开发 
   - 框架内部使用kotlin代码编写  
   - 代码优化  
 
-- v1.0.0：(2021年4月15日)
-  - 上线第一个版本，满足日常项目开发  
 
 ## 效果图
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" alt="演示"/>  
