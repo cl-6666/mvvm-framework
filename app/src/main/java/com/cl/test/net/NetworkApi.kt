@@ -46,7 +46,7 @@ class NetworkApi : BaseNetworkApi() {
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
 
 
-        //下面是4.0.0版本的最新方法
+        //普通网络日志显示写法
         val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
             Log.e(
                 "网络日志", message
@@ -54,7 +54,8 @@ class NetworkApi : BaseNetworkApi() {
         }
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
-        val loggingInterceptor = AndroidLoggingInterceptor.build()
+        //框架内部封装日志显示写法 hideVerticalLine = true代表隐藏横线
+        val loggingInterceptor = AndroidLoggingInterceptor.build(hideVerticalLine = true)
 
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
