@@ -5,6 +5,11 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
 ## 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
 
+- v2.0.16：(2023年06月04日)
+  - 升级Jetpack库版本到2.6.1
+  - 增加可配置的网络显示日志库，支持多样配置
+  - 代码优化
+
 - v2.0.16：(2023年05月11日)
   - 增加下载模块适配https忽略
   - 增加网络httpLoggingInterceptor日志显示  
@@ -36,13 +41,82 @@ Step 2. Add the dependency
 
 ``` Gradle
 dependencies {
-      implementation 'com.github.cl-6666:mvvm-framework:v2.0.16'
+  implementation 'com.github.cl-6666:mvvm-framework:v2.1.0'
 }
 ```  
 
 ## 使用介绍  
+### 网络请求相关使用介绍
+#### 网络日志使用介绍
 
-### 网络相关使用介绍
+------  
+  api功能支持列表 | 是否支持 |
+--------|------|
+支持http request、response的数据格式化的输出 | 支持  |
+当请求为Post时，支持Form表单的打印 | 支持  |
+支持超长日志的打印，解决了 Logcat 4K 字符截断的问题 | 支持  |
+支持格式化时去掉竖线边框显示日志。方便将网络请求复制到Postman之类的工具 | 支持 |
+支持日志级别 | 支持  |
+支持显示当前的线程名称 | 支持  |
+支持排除一些接口的日志显示 | 支持  |
+------  
+
+* 效果图
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/wired.png" alt="演示"/>  
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/wireless.png" alt="演示"/>  
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/default.png" alt="演示"/>  
+
+* 自定义网络日志
+``` kotlin
+//框架内部默认实现方法
+object AndroidLoggingInterceptor {
+    @JvmOverloads
+    @JvmStatic
+    fun build(isDebug:Boolean = true, hideVerticalLine:Boolean = false, requestTag:String = "Request", responseTag:String = "Response"): LoggingInterceptor {
+        init()
+        return if (hideVerticalLine) {
+            LoggingInterceptor.Builder()
+                    .loggable(isDebug) // TODO: 发布到生产环境需要改成false
+                    .androidPlatform()
+                    .request()
+                    .requestTag(requestTag)
+                    .response()
+                    .responseTag(responseTag)
+                    .hideVerticalLine()// 隐藏竖线边框
+                    .build()
+        } else {
+            LoggingInterceptor.Builder()
+                    .loggable(isDebug) // TODO: 发布到生产环境需要改成false
+                    .androidPlatform()
+                    .request()
+                    .requestTag(requestTag)
+                    .response()
+                    .responseTag(responseTag)
+//                    .hideVerticalLine()// 隐藏竖线边框
+                    .build()
+        }
+    }
+}
+
+```
+
+``` kotlin
+     //普通网络日志显示写法
+        val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.e(
+                "网络日志", message
+            )
+        }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        //框架内部封装日志显示写法 hideVerticalLine = true代表隐藏横线
+        val loggingInterceptor = AndroidLoggingInterceptor.build(hideVerticalLine = true)
+	//需要显示日志带横线
+	val loggingInterceptor = AndroidLoggingInterceptor.build()
+
+``` 
+
+#### 网络配置相关
 * 是否需要打开https忽略证书模式
 ``` kotlin
 //双重校验锁式-单例 封装NetApiService 方便直接快速调用简单的接口
@@ -51,6 +125,7 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
     NetworkApi.INSTANCE.getApi(ApiService::class.java, BASE_URL, false)
 }
 ```
+
 * 网络拦截器相关配置介绍
 ``` kotlin
    /**
@@ -58,13 +133,6 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
      * 在这里可以添加拦截器，可以对 OkHttpClient.Builder 做任意操作
      */
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
-         //下面是4.0.0版本的最新方法
-        val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
-            Log.e(
-                "网络日志", message
-            )
-        }
-        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
             cache(Cache(File(appContext.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
@@ -78,7 +146,7 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             addInterceptor(CacheInterceptor())
             addInterceptor(TokenOutInterceptor())
             /** 演示日志拦截器 您也可以自定义网络日志 */
-            addInterceptor(httpLoggingInterceptor)
+            addInterceptor(loggingInterceptor)
             /** 超时时间 连接、读、写 */
             connectTimeout(10, TimeUnit.SECONDS)
             readTimeout(5, TimeUnit.SECONDS)
