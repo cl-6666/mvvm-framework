@@ -147,6 +147,7 @@ val apiService: ApiService by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             addInterceptor(MyHeadInterceptor())
             /** 演示添加缓存拦截器 可传入缓存天数，不传默认7天 */
             addInterceptor(CacheInterceptor())
+	    /** 演示token过期拦截器演示 */
             addInterceptor(TokenOutInterceptor())
             /** 演示日志拦截器 您也可以自定义网络日志 */
             addInterceptor(loggingInterceptor)
