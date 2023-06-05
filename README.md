@@ -5,7 +5,7 @@ Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适�
 ## 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
 
-- v2.0.16：(2023年06月04日)
+- v2.1.0：(2023年06月04日)
   - 升级Jetpack库版本到2.6.1
   - 增加可配置的网络显示日志库，支持多样配置
   - 代码优化
