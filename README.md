@@ -48,6 +48,19 @@ dependencies {
 ```  
 
 ## 使用介绍  
+
+### 项目使用的三方库及其简单示例和资料
+
+* [Kotlin](https://github.com/JetBrains/kotlin)
+* [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
+* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
+* [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
+* [ViewBinding](https://developer.android.com/topic/libraries/view-binding)
+* [OkHttp](https://github.com/square/okhttp)：网络请求
+* [PersistentCookieJar](https://github.com/franmontiel/PersistentCookieJar)：持久CookieJar实现
+* [logging-interceptor](https://github.com/square/okhttp)：网络日志
+* [Retrofit](https://github.com/square/retrofit)：网络请求
+
 ### 网络请求相关使用介绍
 #### 网络日志使用介绍
 
