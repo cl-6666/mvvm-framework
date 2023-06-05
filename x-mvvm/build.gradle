@@ -43,25 +43,21 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
-    // 协程基础库
-//    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-//    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     //lifecycle
-    api 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0'
-    api 'androidx.lifecycle:lifecycle-common-java8:2.2.0'
+    api 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    api 'androidx.lifecycle:lifecycle-common-java8:2.6.1'
     api 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     // viewModel
-    api "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
-    api "androidx.fragment:fragment-ktx:1.5.6"
+    api "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+//    api "androidx.fragment:fragment-ktx:1.5.6"
     // liveData
-    api "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
+    api "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
     //retrofit
     api "com.squareup.retrofit2:retrofit:2.9.0"
     api "com.squareup.retrofit2:converter-gson:2.9.0"
     api 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
     //显示日志
     api 'com.squareup.okhttp3:logging-interceptor:4.11.0'
-
 }
 
 

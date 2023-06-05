@@ -7,8 +7,7 @@ import com.cl.test.databinding.ActivityMainBinding
 import com.cl.test.ext.init
 import com.cl.test.ui.adapter.ArticleListAdapter
 import com.cl.test.ui.viewmodel.MainViewModel
-import com.maxvision.mvvm.ext.util.logi
-import com.maxvision.mvvm.ext.util.toJson
+
 
 class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
 
@@ -19,6 +18,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     override fun initView(savedInstanceState: Bundle?) {
         mViewModel.apiArticleListData()
         initRv()
+
     }
 
     private fun initRv() {

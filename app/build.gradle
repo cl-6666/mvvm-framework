@@ -51,7 +51,7 @@ dependencies {
     implementation project(path: ':x-mvvm')
 
     //地址：https://github.com/cl-6666/mvvm-framework
-//    implementation 'com.github.cl-6666:mvvm-framework:v2.0.12'
+//    implementation 'com.github.cl-6666:mvvm-framework:v2.0.16'
     //BaseAdapter
     implementation "io.github.cymchad:BaseRecyclerViewAdapterHelper:4.0.0-beta04"
     //implementation 'com.afollestad.material-dialogs:core:3.3.0'
@@ -60,6 +60,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.14.2'
     // 吐司框架：https://github.com/getActivity/Toaster
     implementation 'com.github.getActivity:Toaster:12.2'
+
+
 
 
 }

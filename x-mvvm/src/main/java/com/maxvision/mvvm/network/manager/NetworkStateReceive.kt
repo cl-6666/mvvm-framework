@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import com.maxvision.mvvm.network.NetworkUtil
+import com.maxvision.mvvm.util.NetworkUtil
 
 /**
  * 作者　: cl

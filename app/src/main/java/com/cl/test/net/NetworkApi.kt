@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder
 import com.maxvision.mvvm.base.appContext
 import com.maxvision.mvvm.network.BaseNetworkApi
 import com.maxvision.mvvm.network.interceptor.CacheInterceptor
+import com.maxvision.mvvm.network.log.AndroidLoggingInterceptor
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -52,6 +53,9 @@ class NetworkApi : BaseNetworkApi() {
             )
         }
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        val loggingInterceptor = AndroidLoggingInterceptor.build()
+
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
             cache(Cache(File(appContext.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
@@ -65,7 +69,7 @@ class NetworkApi : BaseNetworkApi() {
             addInterceptor(CacheInterceptor())
             addInterceptor(TokenOutInterceptor())
             /** 演示日志拦截器 */
-            addInterceptor(httpLoggingInterceptor)
+            addInterceptor(loggingInterceptor)
             /** 超时时间 连接、读、写 */
             connectTimeout(10, TimeUnit.SECONDS)
             readTimeout(5, TimeUnit.SECONDS)

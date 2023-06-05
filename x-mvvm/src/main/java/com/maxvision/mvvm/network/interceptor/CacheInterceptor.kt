@@ -1,7 +1,7 @@
 package com.maxvision.mvvm.network.interceptor
 
 import com.maxvision.mvvm.base.appContext
-import com.maxvision.mvvm.network.NetworkUtil
+import com.maxvision.mvvm.util.NetworkUtil
 import okhttp3.CacheControl
 import okhttp3.Interceptor
 import okhttp3.Response
