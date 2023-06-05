@@ -1,6 +1,8 @@
 # Jetpack MVVM框架
 Android Jetpack MVVM框架开发，基于AndroidX开发，傻瓜式使用，适用于所有项目
 
+**谷歌 Android 团队 Jetpack 视图模型：**
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img2.png" alt="演示"/>  
 
 ## 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
