@@ -61,9 +61,12 @@ dependencies {
 支持排除一些接口的日志显示 | 支持  |
 ------  
 
-* 效果图
+* 效果图  
+日志左边带横线
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/wired.png" alt="演示"/>  
+日志左边不带横线
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/wireless.png" alt="演示"/>  
+logging-interceptor默认实现
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/default.png" alt="演示"/>  
 
 * 自定义网络日志
