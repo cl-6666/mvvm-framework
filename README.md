@@ -53,7 +53,7 @@ dependencies {
 
 * [Kotlin](https://github.com/JetBrains/kotlin)
 * [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
-* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
+* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)：用于持有和UI元素相关的数据，以保证这些数据在屏幕旋转时不会丢失
 * [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
 * [ViewBinding](https://developer.android.com/topic/libraries/view-binding)
 * [OkHttp](https://github.com/square/okhttp)：网络请求
