@@ -68,6 +68,7 @@ class NetworkApi : BaseNetworkApi() {
             addInterceptor(MyHeadInterceptor())
             /** 演示添加缓存拦截器 可传入缓存天数，不传默认7天 */
             addInterceptor(CacheInterceptor())
+            /** 演示token过期拦截器演示 */
             addInterceptor(TokenOutInterceptor())
             /** 演示日志拦截器 */
             addInterceptor(loggingInterceptor)
