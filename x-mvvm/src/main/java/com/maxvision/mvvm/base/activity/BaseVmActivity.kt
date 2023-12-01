@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
-import com.maxvision.mvvm.ext.getVmClazz
 import com.maxvision.mvvm.ext.util.notNull
 import com.maxvision.mvvm.network.manager.NetState
 import com.maxvision.mvvm.network.manager.NetworkStateManager
@@ -14,11 +12,9 @@ import com.maxvision.mvvm.network.manager.NetworkStateManager
 /**
  * 作者　: cl
  * 时间　: 2023/04/12
- * 描述　: ViewModelActivity基类，把ViewModel注入进来了
+ * 描述　: V3版本去掉了BaseViewModel继承，BaseVmActivity基类
  */
-abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
-
-    lateinit var mViewModel: VM
+abstract class BaseVmActivity : AppCompatActivity() {
 
     abstract fun layoutId(): Int
 
@@ -39,7 +35,6 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
     }
 
     private fun init(savedInstanceState: Bundle?) {
-        mViewModel = createViewModel()
         registerUiChange()
         initView(savedInstanceState)
         createObserver()
@@ -53,12 +48,6 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
      */
     open fun onNetworkStateChanged(netState: NetState) {}
 
-    /**
-     * 创建viewModel
-     */
-    private fun createViewModel(): VM {
-        return ViewModelProvider(this).get(getVmClazz(this))
-    }
 
     /**
      * 创建LiveData数据观察者
@@ -69,14 +58,14 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
      * 注册UI 事件
      */
     private fun registerUiChange() {
-        //显示弹窗
-        mViewModel.loadingChange.showDialog.observeInActivity(this, Observer {
-            showLoading(it)
-        })
-        //关闭弹窗
-        mViewModel.loadingChange.dismissDialog.observeInActivity(this, Observer {
-            dismissLoading()
-        })
+//        //显示弹窗
+//        initViewModel().loadingChange.showDialog.observeInActivity(this, Observer {
+//            showLoading(it)
+//        })
+//        //关闭弹窗
+//        initViewModel().loadingChange.dismissDialog.observeInActivity(this, Observer {
+//            dismissLoading()
+//        })
     }
 
     /**

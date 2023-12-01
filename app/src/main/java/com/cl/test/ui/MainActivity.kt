@@ -6,12 +6,13 @@ import com.cl.test.databinding.ActivityMainBinding
 import com.cl.test.ui.adapter.MainTabAdapter
 import com.cl.test.ui.fragment.HomeFragment
 import com.cl.test.ui.fragment.MyFragment
-import com.cl.test.ui.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
-
-class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
+@AndroidEntryPoint
+class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     private lateinit var fragmentAdapter: MainTabAdapter
+
 
     override fun initView(savedInstanceState: Bundle?) {
         fragmentAdapter = MainTabAdapter(this)
@@ -31,4 +32,5 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
             true
         }
     }
+
 }

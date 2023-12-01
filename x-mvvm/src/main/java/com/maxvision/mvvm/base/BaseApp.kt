@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 
+
 /**
  * 作者　: cl
  * 时间　: 2023/04/12
@@ -13,16 +14,11 @@ import androidx.lifecycle.ViewModelStoreOwner
  * 那么你可以复制该类的代码到你的自定义Application中去，然后可以自己写获取ViewModel的拓展函数即 :
  * GetViewModelExt类的getAppViewModel方法
  */
-
 open class BaseApp : Application(), ViewModelStoreOwner {
 
     private lateinit var mAppViewModelStore: ViewModelStore
 
     private var mFactory: ViewModelProvider.Factory? = null
-
-//    override fun getViewModelStore(): ViewModelStore {
-//        return mAppViewModelStore
-//    }
 
     override fun onCreate() {
         super.onCreate()

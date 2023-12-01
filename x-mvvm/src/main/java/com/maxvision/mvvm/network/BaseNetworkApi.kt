@@ -11,6 +11,7 @@ import retrofit2.Retrofit
  */
 abstract class BaseNetworkApi {
 
+
     fun <T> getApi(serviceClass: Class<T>, baseUrl: String,type: Boolean): T {
         //根据type判断使用哪个okHttpClient
         val okHttpClient = if (type) okHttpClientHttps else okHttpClient
