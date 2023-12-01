@@ -7,7 +7,6 @@ package com.cl.test
  */
 class Constants {
 
-
     companion object {
 
         //http请求地址
