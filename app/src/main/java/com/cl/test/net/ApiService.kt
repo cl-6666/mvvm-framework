@@ -1,5 +1,7 @@
 package com.cl.test.net
+import com.cl.test.bean.ArticleListBean
 import com.cl.test.bean.Data
+import retrofit2.Response
 import retrofit2.http.*
 
 /**
@@ -7,7 +9,7 @@ import retrofit2.http.*
  * 时间　: 2023/04/14
  * 描述　: 网络API
  */
-interface ApiService {
+interface ApiService  {
 
     /**
      * 首页文章列表

@@ -2,8 +2,11 @@ package com.cl.test.app
 
 import android.app.Application
 import com.hjq.toast.Toaster
+import com.maxvision.mvvm.base.BaseApp
+import dagger.hilt.android.HiltAndroidApp
 
-class AppApplication : Application() {
+@HiltAndroidApp
+class AppApplication : BaseApp() {
 
     override fun onCreate() {
         super.onCreate()

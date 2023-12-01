@@ -10,28 +10,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
-import com.maxvision.mvvm.ext.getVmClazz
 import com.maxvision.mvvm.network.manager.NetState
 import com.maxvision.mvvm.network.manager.NetworkStateManager
 
 /**
  * 作者　: cl
  * 时间　: 2023/04/12
- * 描述　: ViewModelFragment基类，自动把ViewModel注入Fragment
+ * 描述　: V3版本去掉了BaseViewModel继承，BaseVmFragment基类
  */
-
-abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
+abstract class BaseVmFragment : Fragment() {
 
     private val handler = Handler()
 
     //是否第一次加载
     private var isFirst: Boolean = true
 
-    lateinit var mViewModel: VM
 
     lateinit var mActivity: AppCompatActivity
+
 
     /**
      * 当前Fragment绑定的视图布局
@@ -54,7 +51,6 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isFirst = true
-        mViewModel = createViewModel()
         initView(savedInstanceState)
         createObserver()
         registorDefUIChange()
@@ -66,12 +62,6 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
      */
     open fun onNetworkStateChanged(netState: NetState) {}
 
-    /**
-     * 创建viewModel
-     */
-    private fun createViewModel(): VM {
-        return ViewModelProvider(this).get(getVmClazz(this))
-    }
 
     /**
      * 初始化view
@@ -99,7 +89,7 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
     private fun onVisible() {
         if (lifecycle.currentState == Lifecycle.State.STARTED && isFirst) {
             // 延迟加载 防止 切换动画还没执行完毕时数据就已经加载好了，这时页面会有渲染卡顿
-            handler.postDelayed( {
+            handler.postDelayed({
                 lazyLoadData()
                 //在Fragment中，只有懒加载过了才能开启网络变化监听
                 NetworkStateManager.instance.mNetworkStateCallback.observeInFragment(
@@ -111,7 +101,7 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
                         }
                     })
                 isFirst = false
-            },lazyLoadTime())
+            }, lazyLoadTime())
         }
     }
 
@@ -128,12 +118,12 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
      * 注册 UI 事件
      */
     private fun registorDefUIChange() {
-        mViewModel.loadingChange.showDialog.observeInFragment(this, Observer {
-            showLoading(it)
-        })
-        mViewModel.loadingChange.dismissDialog.observeInFragment(this, Observer {
-            dismissLoading()
-        })
+//        initViewModel().loadingChange.showDialog.observeInFragment(this, Observer {
+//            showLoading(it)
+//        })
+//        initViewModel().loadingChange.dismissDialog.observeInFragment(this, Observer {
+//            dismissLoading()
+//        })
     }
 
     /**
