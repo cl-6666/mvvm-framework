@@ -29,7 +29,6 @@ class MainViewModel @Inject constructor(
 
     }
 
-
     /**
      * 获取数据
      */

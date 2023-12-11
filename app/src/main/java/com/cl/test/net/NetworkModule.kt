@@ -1,6 +1,5 @@
 package com.cl.test.net
 
-import android.util.Log
 import com.cl.test.Constants
 import com.google.gson.GsonBuilder
 import com.maxvision.mvvm.base.appContext
@@ -16,18 +15,18 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
  * name：cl
  * date：2023/11/23
- * desc：类备注
+ * desc：
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule : BaseNetworkApi(){
-
 
     /**
      * 实现重写父类的setHttpClientBuilder方法，
@@ -36,7 +35,7 @@ object NetworkModule : BaseNetworkApi(){
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
        //普通网络日志显示写法
         val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
-            Log.e(
+            Timber.i(
                 "网络日志", message
             )
         }
