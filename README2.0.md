@@ -21,9 +21,6 @@
   - 代码优化  
 
 
-## 效果图
-<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" alt="演示"/>  
-
 ## 项目依赖  
 
 ``` Gradle
