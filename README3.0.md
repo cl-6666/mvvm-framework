@@ -257,24 +257,20 @@ data class ApiResponse<T>(var errorCode: Int, var errorMsg: String, var data: T)
     }
 ```  
 
-* Activity请求玩安卓api案例
+* 请求玩安卓api案例
 
 ``` kotlin
-  class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
+ @AndroidEntryPoint
+class HomeFragment : BaseFragment<FragmentHomeBinding>(){
 
+    private val mViewModel: MainViewModel by viewModels()
     private val mArticleListAdapter: ArticleListAdapter by lazy { ArticleListAdapter(arrayListOf()) }
 
     override fun initView(savedInstanceState: Bundle?) {
         mViewModel.apiArticleListData()
-        initRv()
-    }
-
-    private fun initRv() {
-        mDatabind.rvArticleList.init(LinearLayoutManager(this), mArticleListAdapter, false)
-
+        mDatabind.rvArticleList.init(LinearLayoutManager(activity), mArticleListAdapter, false)
         mViewModel.getArticleListData().observe(this) {
             mArticleListAdapter.submitList(it.datas)
-            mArticleListAdapter.notifyDataSetChanged()
         }
     }
 }
@@ -282,10 +278,11 @@ data class ApiResponse<T>(var errorCode: Int, var errorMsg: String, var data: T)
 * ViewModel简单使用介绍如下 
 
 ``` kotlin
-class MainViewModel : BaseViewModel() {
-
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val apiService: ApiService
+): BaseViewModel() {
     private var articleListData: MutableLiveData<Data> = MutableLiveData()
-    
     /**
      * 网络请求
      */
@@ -296,13 +293,44 @@ class MainViewModel : BaseViewModel() {
             //失败
         },true)
     }
-
-
     /**
      * 获取数据
      */
     fun getArticleListData(): MutableLiveData<Data> {
         return articleListData
+    }
+    /**
+     * 下载演示
+     */
+    suspend fun downloadPictures(){
+        DownLoadManager.downLoad("TAG", "", "", "", reDownload = false, whetherHttps = false,
+            object : OnDownLoadListener {
+                override fun onDownLoadPrepare(key: String) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDownLoadError(key: String, throwable: Throwable) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDownLoadSuccess(key: String, path: String, size: Long) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDownLoadPause(key: String) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onUpdate(
+                    key: String,
+                    progress: Int,
+                    read: Long,
+                    count: Long,
+                    done: Boolean
+                ) {
+                    TODO("Not yet implemented")
+                }
+            })
     }
 }
 ```
