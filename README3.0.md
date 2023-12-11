@@ -1,8 +1,3 @@
-# Jetpack MVVM框架
-一个灵活、高效的Android Jetpack MVVM开发框架，基于AndroidX开发，傻瓜式使用，适用于所有项目，强烈建议以依赖的方式导入，这样避免代码同步，有问题或建议？请通过博客、qq群联系我们。  
-
-**谷歌 Android 团队 Jetpack 视图模型：**
-<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img2.png" alt="演示"/>  
 
 ## 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
@@ -11,19 +6,6 @@
   - 升级Jetpack库版本到2.6.1
   - 增加可配置的网络显示日志库，支持多样配置
   - 代码优化
-
-- v2.0.16：(2023年05月11日)
-  - 增加下载模块适配https忽略
-  - 增加网络httpLoggingInterceptor日志显示  
-
-- v2.0.12：(2023年05月11日)
-  - 增加网络缓存拦截器、公共heads、添加缓存拦截器等演示
-  - 代码优化  
-
-- v1.0.1：(2023年05月01日)
-  - 上线第一个版本，满足日常项目开发 
-  - 框架内部使用kotlin代码编写  
-  - 代码优化  
 
 
 ## 效果图
@@ -52,10 +34,16 @@ dependencies {
 ### 项目使用的三方库及其简单示例和资料
 
 * [Kotlin](https://github.com/JetBrains/kotlin)
-* [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
-* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)：用于持有和UI元素相关的数据，以保证这些数据在屏幕旋转时不会丢失
+* Jetpack
+  - [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle): 观察 Android 生命周期并根据生命周期变化处理 UI 状态
+  - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel): 管理与 UI 相关的数据持有者和生命周期感知。 允许数据在配置更改（例如屏幕旋转）中保存下来。
+  - [ViewBinding](https://developer.android.com/topic/libraries/view-binding): 使用声明性格式而不是以编程方式将布局中的 UI 组件绑定到应用程序中的数据源。
+  - [Room](https://developer.android.google.cn/jetpack/androidx/releases/room?hl=zh-cn): 通过在 SQLite 上提供抽象层来构建数据库，以允许流畅的数据库访问。
+  - [Hilt](https://dagger.dev/hilt/): 用于依赖注入。
 * [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
-* [ViewBinding](https://developer.android.com/topic/libraries/view-binding)
+* [ksp](https://github.com/google/ksp): Kotlin 符号处理 API。
+* [Glide](https://github.com/bumptech/glide), [GlidePalette](https://github.com/florent37/GlidePalette): 从网络加载图像。
+* [Timber](https://github.com/JakeWharton/timber): 日志框架
 * [OkHttp](https://github.com/square/okhttp)：网络请求
 * [PersistentCookieJar](https://github.com/franmontiel/PersistentCookieJar)：持久CookieJar实现
 * [logging-interceptor](https://github.com/square/okhttp)：网络日志
