@@ -61,12 +61,12 @@ dependencies {
     api "com.squareup.retrofit2:retrofit:$retrofit_version"
     api "com.squareup.retrofit2:converter-gson:$retrofit_version"
     api 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
-    //显示日志
+    //网络显示日志
     api 'com.squareup.okhttp3:logging-interceptor:4.11.0'
-//    //hilt官方地址：https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh-cn
-//    def hilt_version = "2.48.1"
-//    api "com.google.dagger:hilt-android:$hilt_version"
-//    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    //打印日志
+    api 'com.jakewharton.timber:timber:5.0.1'
+    //glide图片加载框架
+    api 'com.github.bumptech.glide:glide:4.16.0'
 }
 
 
