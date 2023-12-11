@@ -4,6 +4,9 @@
 **谷歌 Android 团队 Jetpack 视图模型：**
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img2.png" alt="演示"/>  
 
+**框架UI效果图如下:**  
+<img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" width="500" height="650" alt="演示"/>  
+
 新版3.x.x已发布 新增Jetpack hilt组件，不熟悉hilt组件的建议使用2.x.x版本
 
 # Document
