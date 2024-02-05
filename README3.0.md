@@ -21,6 +21,18 @@ dependencies {
    implementation 'com.github.cl-6666:mvvm-framework:v3.0.0'
 }
 ```
+Step 3. Add hilt
+``` Gradle
+plugins {
+    id 'com.google.dagger.hilt.android'
+    id 'kotlin-kapt'
+}
+
+   //hilt官方地址：https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh-cn
+    def hilt_version = "2.48.1"
+    api "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+```
 
 ## 使用介绍
 
