@@ -35,7 +35,23 @@ plugins {
 ```
 
 ## 使用介绍
-基本使用和2.+版本一样，具体可以参考2.+版本，不一样的地方3.+版本引入了hilt组件，hlt组件可以做很多事情，具体可以根据项目情况修改，以下是一个简单案例
+基本使用和2.+版本一样，具体可以参考2.+版本，不一样的地方3.+版本引入了hilt组件，hlt组件可以做很多事情，具体可以根据项目情况修改，以下是一个简单案例  
+```kotlin
+@AndroidEntryPoint
+public class ExampleActivity extends AppCompatActivity { ... }
+```
+Hilt 会按照相应 Android 类的生命周期自动创建和销毁生成的组件类的实例。  
+
+|	生成的组件	|	创建时机	|	销毁时机|	
+|	---		|	---		|	---		|
+|	SingletonComponent	|	Application#onCreate()	|	Application 已销毁 |		
+|	ActivityRetainedComponent |	Activity#onCreate()|	Activity#onDestroy() |
+|	ViewModelComponent |	ViewModel 已创建	|	ViewModel 已销毁|	
+|	ActivityComponent	|	Activity#onCreate()	|	Activity#onDestroy()|	
+|	FragmentComponent	|	Fragment#onAttach()	|	Fragment#onDestroy()
+|	ViewComponent	|	View#super()	|	View 已销毁|	
+|	ViewWithFragmentComponent	|	View#super()	|	View 已销毁|	
+|	ServiceComponent	|	Service#onCreate()	|	Service#onDestroy()|	
 
 ### 项目使用的三方库及其简单示例和资料
 
