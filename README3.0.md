@@ -36,9 +36,17 @@ plugins {
 
 ## 使用介绍
 基本使用和2.+版本一样，具体可以参考2.+版本，不一样的地方3.+版本引入了hilt组件，hlt组件可以做很多事情，具体可以根据项目情况修改，以下是一个简单案例  
+
+所有使用 Hilt 的应用都必须包含一个带有 @HiltAndroidApp 注解的 Application 类。  
+```kotlin
+@HiltAndroidApp
+class ExampleApplication : Application() { ... }
+```
+生成的这一 Hilt 组件会附加到 Application 对象的生命周期，并为其提供依赖项。此外，它也是应用的父组件，这意味着，其他组件可以访问它提供的依赖项。  
+在 Application 类中设置了 Hilt 且有了应用级组件后，Hilt 可以为带有 @AndroidEntryPoint 注解的其他 Android 类提供依赖项：
 ```kotlin
 @AndroidEntryPoint
-public class ExampleActivity extends AppCompatActivity { ... }
+class ExampleActivity : AppCompatActivity() { ... }
 ```
 Hilt 会按照相应 Android 类的生命周期自动创建和销毁生成的组件类的实例。  
 
