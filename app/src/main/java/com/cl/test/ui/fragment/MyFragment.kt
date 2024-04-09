@@ -3,9 +3,11 @@ package com.cl.test.ui.fragment
 import android.os.Bundle
 import com.cl.test.base.BaseFragment
 import com.cl.test.databinding.FragmentMyBinding
+import com.cl.test.ui.viewmodel.MyFragmentViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
-
-class MyFragment :  BaseFragment<FragmentMyBinding>(){
+@AndroidEntryPoint
+class MyFragment :  BaseFragment<MyFragmentViewModel,FragmentMyBinding>(){
 
 
     override fun initView(savedInstanceState: Bundle?) {

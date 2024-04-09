@@ -7,6 +7,7 @@ import androidx.databinding.ViewDataBinding
 import com.cl.test.ext.dismissLoadingExt
 import com.cl.test.ext.showLoadingExt
 import com.maxvision.mvvm.base.fragment.BaseVmDbFragment
+import com.maxvision.mvvm.base.viewmodel.BaseViewModel
 
 /**
  * 作者　: cl
@@ -14,7 +15,7 @@ import com.maxvision.mvvm.base.fragment.BaseVmDbFragment
  * BaseVmFragment例如
  * abstract class BaseFragment<VM : BaseViewModel> : BaseVmFragment<VM>() {
  */
-abstract class BaseFragment<DB : ViewDataBinding> : BaseVmDbFragment<DB>() {
+abstract class BaseFragment<VM : BaseViewModel, DB : ViewDataBinding> : BaseVmDbFragment<VM, DB>() {
 
 
     abstract override fun initView(savedInstanceState: Bundle?)

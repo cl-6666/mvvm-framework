@@ -15,7 +15,7 @@ import com.maxvision.mvvm.base.viewmodel.BaseViewModel
  * BaseVmActivity例如
  * abstract class BaseActivity<VM : BaseViewModel> : BaseVmActivity<VM>() {
  */
-abstract class BaseActivity<DB : ViewDataBinding> : BaseVmDbActivity<DB>() {
+abstract class BaseActivity<VM : BaseViewModel, DB : ViewDataBinding> : BaseVmDbActivity<VM, DB>() {
 
     abstract override fun initView(savedInstanceState: Bundle?)
 

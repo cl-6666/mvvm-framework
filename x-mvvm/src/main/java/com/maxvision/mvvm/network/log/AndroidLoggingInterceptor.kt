@@ -1,5 +1,10 @@
 package com.maxvision.mvvm.network.log
 
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 
 /**
@@ -7,10 +12,12 @@ package com.maxvision.mvvm.network.log
  * date：2023/6/5
  * desc：
  */
+@InstallIn(SingletonComponent::class)
+@Module
 object AndroidLoggingInterceptor {
 
-    @JvmOverloads
-    @JvmStatic
+    @Singleton
+    @Provides
     fun build(isDebug:Boolean = true, hideVerticalLine:Boolean = false, requestTag:String = "Request", responseTag:String = "Response"): LoggingInterceptor {
         init()
         return if (hideVerticalLine) {
