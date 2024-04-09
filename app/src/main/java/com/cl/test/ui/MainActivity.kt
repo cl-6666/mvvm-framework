@@ -6,10 +6,11 @@ import com.cl.test.databinding.ActivityMainBinding
 import com.cl.test.ui.adapter.MainTabAdapter
 import com.cl.test.ui.fragment.HomeFragment
 import com.cl.test.ui.fragment.MyFragment
+import com.cl.test.ui.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : BaseActivity<ActivityMainBinding>() {
+class MainActivity : BaseActivity<MainViewModel,ActivityMainBinding>() {
 
     private lateinit var fragmentAdapter: MainTabAdapter
 

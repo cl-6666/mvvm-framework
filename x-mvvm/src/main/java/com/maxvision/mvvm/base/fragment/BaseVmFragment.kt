@@ -10,25 +10,29 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
 import com.maxvision.mvvm.network.manager.NetState
 import com.maxvision.mvvm.network.manager.NetworkStateManager
+import java.lang.reflect.ParameterizedType
 
 /**
  * 作者　: cl
  * 时间　: 2023/04/12
- * 描述　: V3版本去掉了BaseViewModel继承，BaseVmFragment基类
+ * 描述　: ViewModelFragment基类，自动把ViewModel注入Fragment
  */
-abstract class BaseVmFragment : Fragment() {
+
+abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
 
     private val handler = Handler()
 
     //是否第一次加载
     private var isFirst: Boolean = true
 
+    lateinit var mViewModel: VM
 
     lateinit var mActivity: AppCompatActivity
-
 
     /**
      * 当前Fragment绑定的视图布局
@@ -51,6 +55,7 @@ abstract class BaseVmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isFirst = true
+        mViewModel = obtainViewModel(getVMClass())
         initView(savedInstanceState)
         createObserver()
         registorDefUIChange()
@@ -63,6 +68,70 @@ abstract class BaseVmFragment : Fragment() {
     open fun onNetworkStateChanged(netState: NetState) {}
 
 
+    /**
+     * 获取[ViewModel]
+     */
+    private fun <T : ViewModel> obtainViewModel(vmClass: Class<T>): T {
+        return ViewModelProvider(
+            viewModelStore,
+            defaultViewModelProviderFactory,
+            defaultViewModelCreationExtras
+        )[vmClass]
+    }
+
+    /**
+     * 获取Activity持有的[ViewModel]
+     */
+    fun <T : ViewModel> obtainActivityViewModel(vmClass: Class<T>): T {
+        return ViewModelProvider(
+            requireActivity().viewModelStore,
+            requireActivity().defaultViewModelProviderFactory,
+            requireActivity().defaultViewModelCreationExtras
+        )[vmClass]
+    }
+
+    /**
+     * 获取泛型VM对应的类
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun getVMClass(): Class<VM> {
+        var cls: Class<*>? = javaClass
+        var vmClass: Class<VM>? = null
+        while (vmClass == null && cls != null) {
+            vmClass = getVMClass(cls)
+            cls = cls.superclass
+        }
+        if (vmClass == null) {
+            vmClass = BaseViewModel::class.java as Class<VM>
+        }
+        return vmClass
+    }
+
+    /**
+     * 根据传入的 cls 获取泛型VM对应的类
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun getVMClass(cls: Class<*>): Class<VM>? {
+        val type = cls.genericSuperclass
+        if (type is ParameterizedType) {
+            val types = type.actualTypeArguments
+            for (t in types) {
+                if (t is Class<*>) {
+                    if (BaseViewModel::class.java.isAssignableFrom(t)) {
+                        return t as? Class<VM>
+                    }
+                } else if (t is ParameterizedType) {
+                    val rawType = t.rawType
+                    if (rawType is Class<*>) {
+                        if (BaseViewModel::class.java.isAssignableFrom(rawType)) {
+                            return rawType as? Class<VM>
+                        }
+                    }
+                }
+            }
+        }
+        return null
+    }
     /**
      * 初始化view
      */
@@ -89,7 +158,7 @@ abstract class BaseVmFragment : Fragment() {
     private fun onVisible() {
         if (lifecycle.currentState == Lifecycle.State.STARTED && isFirst) {
             // 延迟加载 防止 切换动画还没执行完毕时数据就已经加载好了，这时页面会有渲染卡顿
-            handler.postDelayed({
+            handler.postDelayed( {
                 lazyLoadData()
                 //在Fragment中，只有懒加载过了才能开启网络变化监听
                 NetworkStateManager.instance.mNetworkStateCallback.observeInFragment(
@@ -101,7 +170,7 @@ abstract class BaseVmFragment : Fragment() {
                         }
                     })
                 isFirst = false
-            }, lazyLoadTime())
+            },lazyLoadTime())
         }
     }
 
@@ -118,12 +187,12 @@ abstract class BaseVmFragment : Fragment() {
      * 注册 UI 事件
      */
     private fun registorDefUIChange() {
-//        initViewModel().loadingChange.showDialog.observeInFragment(this, Observer {
-//            showLoading(it)
-//        })
-//        initViewModel().loadingChange.dismissDialog.observeInFragment(this, Observer {
-//            dismissLoading()
-//        })
+        mViewModel.loadingChange.showDialog.observeInFragment(this, Observer {
+            showLoading(it)
+        })
+        mViewModel.loadingChange.dismissDialog.observeInFragment(this, Observer {
+            dismissLoading()
+        })
     }
 
     /**

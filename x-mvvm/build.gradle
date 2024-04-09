@@ -1,7 +1,9 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.dagger.hilt.android'
     id 'maven-publish'
+    id 'kotlin-kapt'
 }
 
 group = 'com.github.jitpack'
@@ -65,8 +67,16 @@ dependencies {
     api 'com.squareup.okhttp3:logging-interceptor:4.11.0'
     //打印日志
     api 'com.jakewharton.timber:timber:5.0.1'
-    //glide图片加载框架
-    api 'com.github.bumptech.glide:glide:4.16.0'
+    //coil图片加载框架
+    api("io.coil-kt:coil-compose:2.6.0")
+    //hilt官方地址：https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh-cn
+    def hilt_version = "2.48.1"
+    api "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+}
+
+kapt {
+    correctErrorTypes true
 }
 
 

@@ -1,7 +1,6 @@
 package com.cl.test.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cl.test.base.BaseFragment
 import com.cl.test.databinding.FragmentHomeBinding
@@ -11,9 +10,9 @@ import com.cl.test.ui.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class HomeFragment : BaseFragment<FragmentHomeBinding>(){
+class HomeFragment : BaseFragment<MainViewModel,FragmentHomeBinding>(){
 
-    private val mViewModel: MainViewModel by viewModels()
+//    private val mViewModel: MainViewModel by viewModels()
 
     private val mArticleListAdapter: ArticleListAdapter by lazy { ArticleListAdapter(arrayListOf()) }
 
