@@ -21,7 +21,6 @@ class MainViewModel @Inject constructor(
     private val apiService: ApiService
 ) : BaseViewModel() {
 
-
     @Inject
     lateinit var downLoadManager: DownLoadManager
 
