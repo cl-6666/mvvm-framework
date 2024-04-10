@@ -14,7 +14,6 @@ import java.lang.reflect.ParameterizedType
  * 时间　: 2023/04/12
  * 描述　:
  */
-
 @JvmName("inflateWithGeneric")
 fun <VB : ViewBinding> AppCompatActivity.inflateBindingWithGeneric(layoutInflater: LayoutInflater): VB =
     withGenericBindingClass<VB>(this) { clazz ->

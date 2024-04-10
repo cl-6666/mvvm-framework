@@ -2,9 +2,9 @@ package com.maxvision.mvvm.ext
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
 import com.maxvision.mvvm.base.activity.BaseVmActivity
 import com.maxvision.mvvm.base.fragment.BaseVmFragment
+import kotlinx.coroutines.*
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
 import com.maxvision.mvvm.ext.util.loge
 import com.maxvision.mvvm.network.AppException
@@ -15,6 +15,7 @@ import com.maxvision.mvvm.network.state.paresException
 import com.maxvision.mvvm.network.state.paresResult
 
 
+
 /**
  * 显示页面状态，这里有个技巧，成功回调在第一个，其后两个带默认值的回调可省
  * @param resultState 接口返回值
@@ -23,60 +24,60 @@ import com.maxvision.mvvm.network.state.paresResult
  * @param onError 失败回调
  *
  */
-//fun <T> BaseVmActivity<*>.parseState(
-//    resultState: ResultState<T>,
-//    onSuccess: (T) -> Unit,
-//    onError: ((AppException) -> Unit)? = null,
-//    onLoading: (() -> Unit)? = null
-//) {
-//    when (resultState) {
-//        is ResultState.Loading -> {
-//            showLoading(resultState.loadingMessage)
-//            onLoading?.run { this }
-//        }
-//        is ResultState.Success -> {
-//            dismissLoading()
-//            onSuccess(resultState.data)
-//        }
-//        is ResultState.Error -> {
-//            dismissLoading()
-//            onError?.run { this(resultState.error) }
-//        }
-//    }
-//}
-//
-///**
-// * 显示页面状态，这里有个技巧，成功回调在第一个，其后两个带默认值的回调可省
-// * @param resultState 接口返回值
-// * @param onLoading 加载中
-// * @param onSuccess 成功回调
-// * @param onError 失败回调
-// *
-// */
-//fun <T> BaseVmFragment<*>.parseState(
-//    resultState: ResultState<T>,
-//    onSuccess: (T) -> Unit,
-//    onError: ((AppException) -> Unit)? = null,
-//    onLoading: ((message:String) -> Unit)? = null
-//) {
-//    when (resultState) {
-//        is ResultState.Loading -> {
-//            if(onLoading==null){
-//                showLoading(resultState.loadingMessage)
-//            }else{
-//                onLoading.invoke(resultState.loadingMessage)
-//            }
-//        }
-//        is ResultState.Success -> {
-//            dismissLoading()
-//            onSuccess(resultState.data)
-//        }
-//        is ResultState.Error -> {
-//            dismissLoading()
-//            onError?.run { this(resultState.error) }
-//        }
-//    }
-//}
+fun <T> BaseVmActivity<*>.parseState(
+    resultState: ResultState<T>,
+    onSuccess: (T) -> Unit,
+    onError: ((AppException) -> Unit)? = null,
+    onLoading: (() -> Unit)? = null
+) {
+    when (resultState) {
+        is ResultState.Loading -> {
+            showLoading(resultState.loadingMessage)
+            onLoading?.run { this }
+        }
+        is ResultState.Success -> {
+            dismissLoading()
+            onSuccess(resultState.data)
+        }
+        is ResultState.Error -> {
+            dismissLoading()
+            onError?.run { this(resultState.error) }
+        }
+    }
+}
+
+/**
+ * 显示页面状态，这里有个技巧，成功回调在第一个，其后两个带默认值的回调可省
+ * @param resultState 接口返回值
+ * @param onLoading 加载中
+ * @param onSuccess 成功回调
+ * @param onError 失败回调
+ *
+ */
+fun <T> BaseVmFragment<*>.parseState(
+    resultState: ResultState<T>,
+    onSuccess: (T) -> Unit,
+    onError: ((AppException) -> Unit)? = null,
+    onLoading: ((message:String) -> Unit)? = null
+) {
+    when (resultState) {
+        is ResultState.Loading -> {
+            if(onLoading==null){
+                showLoading(resultState.loadingMessage)
+            }else{
+                onLoading.invoke(resultState.loadingMessage)
+            }
+        }
+        is ResultState.Success -> {
+            dismissLoading()
+            onSuccess(resultState.data)
+        }
+        is ResultState.Error -> {
+            dismissLoading()
+            onError?.run { this(resultState.error) }
+        }
+    }
+}
 
 
 /**

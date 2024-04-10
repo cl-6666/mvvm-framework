@@ -6,6 +6,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.databinding.ViewDataBinding
 import com.cl.test.ext.dismissLoadingExt
 import com.cl.test.ext.showLoadingExt
+import com.hjq.toast.Toaster
 import com.maxvision.mvvm.base.fragment.BaseVmDbFragment
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
 
@@ -49,6 +50,10 @@ abstract class BaseFragment<VM : BaseViewModel, DB : ViewDataBinding> : BaseVmDb
      */
     override fun dismissLoading() {
         dismissLoadingExt()
+    }
+
+    fun toast(msg: String) {
+        Toaster.show(msg)
     }
 
     override fun onPause() {
