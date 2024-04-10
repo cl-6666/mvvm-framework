@@ -20,7 +20,6 @@ class HomeFragment : BaseFragment<MainViewModel, FragmentHomeBinding>(){
         mDatabind.rvArticleList.init(LinearLayoutManager(activity), mArticleListAdapter, false)
     }
 
-
     override fun createObserver() {
         super.createObserver()
         //脱壳
