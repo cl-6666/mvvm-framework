@@ -8,13 +8,27 @@
 <img src="https://github.com/cl-6666/mvvm-framework/blob/master/img/img.png" width="350" height="500" alt="演示"/>  
 
 **框架版本更新说明:**  
-新版3.x.x已发布 新增Jetpack hilt组件，不熟悉hilt组件的建议使用2.x.x版本
+新版3.x.x已发布 新增Jetpack hilt组件，不熟悉hilt组件的建议使用2.x.x版本  
 
 # Document
 - English Writing ...
 - [2.0版本 中文](https://github.com/cl-6666/mvvm-framework/wiki/V2-%E6%99%AE%E9%80%9A%E7%89%88%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 - [3.0版本 中文](https://github.com/cl-6666/mvvm-framework/wiki/V3-Hilt%E7%89%88%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 
+
+### 版本更新历史：  
+[![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
+
+- v3.1.0：(2024年04月06日) hilt版本
+  - 增加coil图片框架
+  - 第三方库升级
+  - hilt相关组件封装
+  - 代码优化
+
+- v2.1.2：(2024年04月06日) 普通版本
+  - 增加coil图片框架
+  - 第三方库升级
+  - 代码优化
 
 
 #### QQ 群：458173716  
