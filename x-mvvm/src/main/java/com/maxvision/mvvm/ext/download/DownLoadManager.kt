@@ -11,6 +11,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import java.io.File
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
 /**
@@ -18,31 +20,30 @@ import java.util.concurrent.TimeUnit
  * 时间　: 2023/4/8
  * 描述　:下载管理类
  */
-object DownLoadManager {
+@Singleton
+class DownLoadManager @Inject constructor(){
 
     /** 忽略https模式 */
-    private val retrofitBuilderHttps by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://www.baidu.com")
-            .client(
-                HttpsCerUtils.trustAllCertificateClient.newBuilder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS).build()
-            ).build()
-    }
+    private val retrofitBuilderHttps = Retrofit.Builder()
+        .baseUrl("https://www.baidu.com")
+        .client(
+            HttpsCerUtils.trustAllCertificateClient.newBuilder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS).build()
+        ).build()
+
+
 
     /** 正常http模式 */
-    private val retrofitBuilder by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://www.baidu.com")
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS).build()
-            ).build()
-    }
+    private val retrofitBuilder = Retrofit.Builder()
+        .baseUrl("https://www.baidu.com")
+        .client(
+            OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS).build()
+        ).build()
 
 
     /**

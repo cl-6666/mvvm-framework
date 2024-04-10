@@ -1,5 +1,4 @@
 package com.maxvision.mvvm.network.log
-
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +14,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 object AndroidLoggingInterceptor {
+
 
     @Singleton
     @Provides

@@ -17,58 +17,7 @@ class MyFragmentViewModel @Inject constructor(
 
     private var articleListData: MutableLiveData<Data> = MutableLiveData()
 
-    /**
-     * 网络请求
-     */
-    fun apiArticleListData() {
-        request({ apiService.getEntryAndExitData()},{
-            articleListData.value=it
-        },{
-            //失败
-        },true)
-
-    }
-
-    /**
-     * 获取数据
-     */
-    fun getArticleListData(): MutableLiveData<Data> {
-        return articleListData
-    }
-
-
-    /**
-     * 下载演示
-     */
-    suspend fun downloadPictures(){
-        DownLoadManager.downLoad("TAG", "", "", "", reDownload = false, whetherHttps = false,
-            object : OnDownLoadListener {
-                override fun onDownLoadPrepare(key: String) {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onDownLoadError(key: String, throwable: Throwable) {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onDownLoadSuccess(key: String, path: String, size: Long) {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onDownLoadPause(key: String) {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onUpdate(
-                    key: String,
-                    progress: Int,
-                    read: Long,
-                    count: Long,
-                    done: Boolean
-                ) {
-                    TODO("Not yet implemented")
-                }
-            })
-    }
+    @Inject
+    lateinit var downLoadManager: DownLoadManager
 
 }
