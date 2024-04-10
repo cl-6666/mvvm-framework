@@ -2,8 +2,9 @@ package com.cl.test.app
 
 import android.app.Application
 import com.hjq.toast.Toaster
+import com.maxvision.mvvm.base.BaseApplication
 
-class AppApplication : Application() {
+class AppApplication : BaseApplication() {
 
     override fun onCreate() {
         super.onCreate()

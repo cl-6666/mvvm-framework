@@ -1,8 +1,8 @@
 package com.maxvision.mvvm.ext.download
 
+import com.maxvision.mvvm.base.BaseApplication.Companion.app
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.maxvision.mvvm.base.appContext
 import okhttp3.ResponseBody
 import java.io.File
 import java.io.RandomAccessFile
@@ -194,8 +194,8 @@ object FileTool {
      * @return String
      */
     fun getBasePath(): String {
-        var p: String? = appContext.getExternalFilesDir(null)?.path
-        val f: File? = appContext.getExternalFilesDir(null)
+        var p: String? = app.getExternalFilesDir(null)?.path
+        val f: File? = app.getExternalFilesDir(null)
         if (null != f) {
             p = f.absolutePath
         }
