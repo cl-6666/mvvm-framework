@@ -3,7 +3,7 @@ package com.maxvision.mvvm.ext.download
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import com.maxvision.mvvm.base.appContext
+import com.maxvision.mvvm.base.BaseApplication.Companion.app
 
 /**
  * 作者　: cl
@@ -16,7 +16,7 @@ object ShareDownLoadUtil {
 
 
     init {
-        sp = appContext.getSharedPreferences(path, Context.MODE_PRIVATE)
+        sp = app.getSharedPreferences(path, Context.MODE_PRIVATE)
     }
 
 
