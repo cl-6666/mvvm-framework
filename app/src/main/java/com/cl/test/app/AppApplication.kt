@@ -13,9 +13,12 @@ class AppApplication : BaseApplication() {
 
         // 初始化 Toast 框架
         Toaster.init(this)
+
+
     }
 
     companion object {
         private val sInstance: Application? = null
+
     }
 }
