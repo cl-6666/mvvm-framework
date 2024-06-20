@@ -6,7 +6,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.QuickViewHolder
 import com.cl.test.R
 import com.cl.test.bean.DataX
-import com.cl.test.util.GlideUtils
+import com.cl.test.util.ImageLoadingUtils
 
 /**
  * name：cl
@@ -23,8 +23,8 @@ class ArticleListAdapter(data: MutableList<String>) : BaseQuickAdapter<DataX, Qu
             .setText(R.id.item_project_title, item?.title)
             .setText(R.id.item_project_type, item?.superChapterName + "/" + item?.chapterName)
             .setText(R.id.item_project_date, item?.niceDate)
-        GlideUtils.loadImage(
-            context, "https://www.wanandroid.com/blogimgs/42da12d8-de56-4439-b40c-eab66c227a4b.png",
+        ImageLoadingUtils.loadImage(
+           "https://www.wanandroid.com/blogimgs/42da12d8-de56-4439-b40c-eab66c227a4b.png",
             holder.getView(R.id.item_project_imageview)
         )
 
