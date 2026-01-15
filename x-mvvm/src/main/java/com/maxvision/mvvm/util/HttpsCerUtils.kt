@@ -140,6 +140,7 @@ object HttpsCerUtils {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
         return mBuilder.build()
     }
 }
