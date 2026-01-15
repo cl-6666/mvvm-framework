@@ -1,21 +1,21 @@
 plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-    id 'com.google.dagger.hilt.android'
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt.android)
     id 'maven-publish'
-    id 'kotlin-kapt'
 }
 
 group = 'com.github.jitpack'
-version = '3.1.0'
+version = '3.2.0'
 
 android {
     namespace 'com.maxvision.mvvm'
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         minSdk 24
-        targetSdk 33
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -27,12 +27,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
     compileOptions {
+        // 使用 Java 11，兼容性更好，适合作为框架库
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    
     kotlinOptions {
-        jvmTarget = "1.8"
+        // 保持与 compileOptions 一致
+        jvmTarget = "11"
     }
 
     buildFeatures {
@@ -41,41 +45,47 @@ android {
     }
 }
 
-
-
 dependencies {
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    //lifecycle
-    api 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
-    api 'androidx.lifecycle:lifecycle-common-java8:2.7.0'
-    api 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    // viewModel
-    api "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
-    // liveData
-    api "androidx.lifecycle:lifecycle-livedata-ktx:2.7.0"
-    //retrofit
-    def retrofit_version = "2.9.0"
-    api "com.squareup.retrofit2:retrofit:$retrofit_version"
-    api "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    api 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
-    //网络显示日志
-    api 'com.squareup.okhttp3:logging-interceptor:4.11.0'
-    //打印日志
-    api 'com.jakewharton.timber:timber:5.0.1'
-    //coil图片加载框架
-    api("io.coil-kt:coil-compose:2.6.0")
-    //hilt官方地址：https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh-cn
-    def hilt_version = "2.48.1"
-    api "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    // AndroidX 核心库
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    
+    // Lifecycle 组件
+    api libs.androidx.lifecycle.runtime.ktx
+    api libs.androidx.lifecycle.common.java8
+    api libs.androidx.lifecycle.viewmodel.ktx
+    api libs.androidx.lifecycle.livedata.ktx
+    
+    // Kotlin Coroutines
+    api libs.kotlinx.coroutines.android
+    api libs.kotlinx.coroutines.core
+    
+    // Retrofit 网络请求
+    api libs.retrofit
+    api libs.retrofit.converter.gson
+    
+    // OkHttp
+    api libs.okhttp
+    api libs.okhttp.logging.interceptor
+    
+    // Cookie 持久化
+    api libs.persistent.cookie.jar
+    
+    // 日志框架
+    api libs.zlog
+    
+    // Coil 图片加载框架
+    api libs.coil.compose
+    
+    // Hilt 依赖注入
+    api libs.hilt.android
+    kapt libs.hilt.compiler
 }
 
 kapt {
     correctErrorTypes true
 }
-
 
 afterEvaluate {
     publishing {
@@ -84,8 +94,8 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.github.jitpack'
-                artifactId = 'android-example'
-                version = '1.0'
+                artifactId = 'mvvm-framework'
+                version = '3.2.0'
             }
         }
     }

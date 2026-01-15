@@ -3,10 +3,11 @@ package com.maxvision.mvvm.base.activity
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
+import com.maxvision.mvvm.event.*
 import com.maxvision.mvvm.ext.util.notNull
 import com.maxvision.mvvm.network.manager.NetState
 import com.maxvision.mvvm.network.manager.NetworkStateManager
@@ -44,9 +45,11 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
         registerUiChange()
         initView(savedInstanceState)
         createObserver()
-        NetworkStateManager.instance.mNetworkStateCallback.observeInActivity(this, Observer {
-            onNetworkStateChanged(it)
-        })
+        
+        // 监听网络状态变化（现代化方案）
+        NetworkStateManager.instance.networkStateFlow.collectEvent(this) { netState ->
+            onNetworkStateChanged(netState)
+        }
     }
 
     /**
@@ -116,33 +119,59 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
     abstract fun createObserver()
 
     /**
-     * 注册UI 事件
+     * 注册UI 事件（现代化方案）
      */
     private fun registerUiChange() {
-        //显示弹窗
-        mViewModel.loadingChange.showDialog.observeInActivity(this, Observer {
-            showLoading(it)
-        })
-        //关闭弹窗
-        mViewModel.loadingChange.dismissDialog.observeInActivity(this, Observer {
-            dismissLoading()
-        })
+        // 收集 ViewModel 的 UI 事件
+        mViewModel.uiEvent.collectEvent(this) { event ->
+            when (event) {
+                is ShowLoadingEvent -> showLoading(event.message)
+                is DismissLoadingEvent -> dismissLoading()
+                else -> {
+                    // 其他事件由子类处理
+                    handleUiEvent(event)
+                }
+            }
+        }
+        
+        // 收集 Loading 状态（解决时序问题）
+        // 使用 collectState 并指定 minActiveState 为 CREATED，以覆盖 onCreate 中发起的请求
+        mViewModel.loadingFlow.collectState(this, Lifecycle.State.CREATED) { state ->
+            if (state.isLoading) {
+                showLoading(state.message)
+            } else {
+                dismissLoading()
+            }
+        }
+    }
+    
+    /**
+     * 处理 UI 事件（子类可重写）
+     */
+    protected open fun handleUiEvent(event: UiEvent) {
+        // 子类可以重写此方法来处理其他 UI 事件
+        // 如 ShowToastEvent, NavigateEvent 等
     }
 
     /**
      * 将非该Activity绑定的ViewModel添加 loading回调 防止出现请求时不显示 loading 弹窗bug
+     * （现代化方案）
+     * 
      * @param viewModels Array<out BaseViewModel>
      */
     protected fun addLoadingObserve(vararg viewModels: BaseViewModel) {
         viewModels.forEach { viewModel ->
-            //显示弹窗
-            viewModel.loadingChange.showDialog.observeInActivity(this, Observer {
-                showLoading(it)
-            })
-            //关闭弹窗
-            viewModel.loadingChange.dismissDialog.observeInActivity(this, Observer {
-                dismissLoading()
-            })
+            // 收集额外 ViewModel 的 UI 事件
+            viewModel.uiEvent.collectEvent(this) { event ->
+                when (event) {
+                    is ShowLoadingEvent -> showLoading(event.message)
+                    is DismissLoadingEvent -> dismissLoading()
+                    else -> {
+                        // 其他事件也可以处理
+                        handleUiEvent(event)
+                    }
+                }
+            }
         }
     }
 

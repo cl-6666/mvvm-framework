@@ -1,20 +1,20 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'com.google.dagger.hilt.android'
-    id 'kotlin-kapt'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
     namespace 'com.cl.test'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.cl.test"
-        minSdk = 26
-        targetSdk = 34
-        versionCode = 310
-        versionName = "3.1.0"
+        minSdk 26
+        targetSdk 35
+        versionCode 320
+        versionName "3.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -29,43 +29,47 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"  // 与 compileOptions 保持一致
     }
 
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
-
 }
-
-
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-//    implementation project(path: ':x-mvvm')
+    
+    // AndroidX Core
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.constraintlayout
+    
+    // 本地模块
+    implementation project(path: ':x-mvvm')
 
-    //地址：https://github.com/cl-6666/mvvm-framework
-    implementation 'com.github.cl-6666:mvvm-framework:v3.1.0'
-    //BaseAdapter
+    // BaseAdapter
     implementation "io.github.cymchad:BaseRecyclerViewAdapterHelper:4.0.0-beta04"
     implementation 'com.afollestad.material-dialogs:lifecycle:3.3.0'
+    
     // 吐司框架：https://github.com/getActivity/Toaster
-    implementation 'com.github.getActivity:Toaster:12.2'
+    implementation 'com.github.getActivity:Toaster:12.6'
 
-    //hilt官方地址：https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh-cn
-    def hilt_version = "2.48.1"
-    api "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+    // Hilt
+    implementation libs.hilt.android
+    kapt libs.hilt.compiler
 }
 
 kapt {

@@ -1,22 +1,26 @@
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
-        maven { url 'https://jitpack.io' }
-        //阿里云云效仓库：https://maven.aliyun.com/mvn/guide
-        maven { url 'https://maven.aliyun.com/repository/central' }
+        gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        //阿里云云效仓库：https://maven.aliyun.com/mvn/guide
-        maven { url 'https://maven.aliyun.com/repository/central' }
     }
 }
+
 rootProject.name = "mvvm-framework"
 include ':app'
 include ':x-mvvm'

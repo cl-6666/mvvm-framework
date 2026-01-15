@@ -9,34 +9,30 @@ import com.maxvision.mvvm.util.NetworkUtil
 /**
  * 作者　: cl
  * 时间　: 2023/04/12
- * 描述　: 网络变化接收器
+ * 描述　: 网络变化接收器（现代化版本）
+ * 
+ * 优化内容：
+ * 1. 使用 NetworkStateManager.postNetworkState 发送状态
+ * 2. 简化逻辑，防止重复通知的工作交给 Manager
+ * 3. 更清晰的代码结构
  */
 class NetworkStateReceive : BroadcastReceiver() {
+    
+    /**
+     * 是否是初始化（跳过第一次广播）
+     */
     var isInit = true
+    
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ConnectivityManager.CONNECTIVITY_ACTION) {
-            if(!isInit){
-                if (!NetworkUtil.isNetworkAvailable(context)) {
-                    //收到没有网络时判断之前的值是不是有网络，如果有网络才提示通知 ，防止重复通知
-                    NetworkStateManager.instance.mNetworkStateCallback.value?.let {
-                        if(it.isSuccess){
-                            //没网
-                            NetworkStateManager.instance.mNetworkStateCallback.value = NetState(isSuccess = false)
-                        }
-                        return
-                    }
-                    NetworkStateManager.instance.mNetworkStateCallback.value = NetState(isSuccess = false)
-                }else{
-                    //收到有网络时判断之前的值是不是没有网络，如果没有网络才提示通知 ，防止重复通知
-                    NetworkStateManager.instance.mNetworkStateCallback.value?.let {
-                        if(!it.isSuccess){
-                            //有网络了
-                            NetworkStateManager.instance.mNetworkStateCallback.value = NetState(isSuccess = true)
-                        }
-                        return
-                    }
-                    NetworkStateManager.instance.mNetworkStateCallback.value = NetState(isSuccess = true)
-                }
+            if (!isInit) {
+                // 检查网络是否可用
+                val isNetworkAvailable = NetworkUtil.isNetworkAvailable(context)
+                
+                // 发送网络状态（Manager 会自动防止重复通知）
+                NetworkStateManager.instance.postNetworkState(
+                    NetState(isSuccess = isNetworkAvailable)
+                )
             }
             isInit = false
         }

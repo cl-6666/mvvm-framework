@@ -9,6 +9,7 @@ import com.cl.test.ext.showLoadingExt
 import com.hjq.toast.Toaster
 import com.maxvision.mvvm.base.fragment.BaseVmDbFragment
 import com.maxvision.mvvm.base.viewmodel.BaseViewModel
+import com.maxvision.mvvm.log.logI
 
 /**
  * 作者　: cl
@@ -42,6 +43,7 @@ abstract class BaseFragment<VM : BaseViewModel, DB : ViewDataBinding> : BaseVmDb
      * 打开等待框
      */
     override fun showLoading(message: String) {
+        logI("showLoading执行了。。。。。")
         showLoadingExt(message)
     }
 

@@ -1,22 +1,18 @@
 package com.cl.test.net
 
+import android.util.Log
 import com.cl.test.Constants
 import com.google.gson.GsonBuilder
-import com.maxvision.mvvm.base.BaseApplication.Companion.app
 import com.maxvision.mvvm.network.BaseNetworkApi
-import com.maxvision.mvvm.network.interceptor.CacheInterceptor
 import com.maxvision.mvvm.network.log.AndroidLoggingInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import timber.log.Timber
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -35,7 +31,7 @@ object NetworkModule : BaseNetworkApi(){
     override fun setHttpClientBuilder(builder: OkHttpClient.Builder): OkHttpClient.Builder {
        //普通网络日志显示写法
         val httpLoggingInterceptor = HttpLoggingInterceptor { message ->
-            Timber.i(
+            Log.i(
                 "网络日志", message
             )
         }
@@ -46,11 +42,11 @@ object NetworkModule : BaseNetworkApi(){
 
         builder.apply {
             /** 设置缓存配置 缓存最大10M */
-            cache(Cache(File(app.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
+//            cache(Cache(File(app.cacheDir, "cxk_cache"), 10 * 1024 * 1024))
             /** 添加Cookies自动持久化 */
 //            cookieJar(cookieJar)
             /** 演示添加缓存拦截器 可传入缓存天数，不传默认7天 */
-            addInterceptor(CacheInterceptor())
+//            addInterceptor(CacheInterceptor())
             /** 演示添加公共heads 注意要设置在日志拦截器之前，不然Log中会不显示head信息 */
             addInterceptor(MyHeadInterceptor())
             /** 演示token过期拦截器演示 */
