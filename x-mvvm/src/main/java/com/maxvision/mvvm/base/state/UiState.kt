@@ -34,7 +34,7 @@ import com.maxvision.mvvm.network.AppException
  * @author cl
  * @since 3.2.0
  */
-sealed class UiState<T> {
+sealed class UiState<out T> {
     
     /**
      * 空闲状态（初始状态）
@@ -104,16 +104,6 @@ sealed class UiState<T> {
     }
     
     /**
-     * 获取数据或默认值
-     * @param default 默认值
-     * @return 数据或默认值
-     */
-    fun getOrDefault(default: T): T = when (this) {
-        is Success -> data
-        else -> default
-    }
-    
-    /**
      * 获取异常（如果是错误状态）
      * @return 异常或 null
      */
@@ -126,14 +116,12 @@ sealed class UiState<T> {
         /**
          * 创建空闲状态
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <T> idle(): UiState<T> = Idle as UiState<T>
+        fun <T> idle(): UiState<T> = Idle
         
         /**
          * 创建加载状态
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <T> loading(message: String = "加载中..."): UiState<T> = Loading(message) as UiState<T>
+        fun <T> loading(message: String = "加载中..."): UiState<T> = Loading(message)
         
         /**
          * 创建成功状态
@@ -143,18 +131,27 @@ sealed class UiState<T> {
         /**
          * 创建错误状态
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <T> error(exception: AppException): UiState<T> = Error(exception) as UiState<T>
+        fun <T> error(exception: AppException): UiState<T> = Error(exception)
         
         /**
          * 创建空数据状态
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <T> empty(message: String = "暂无数据"): UiState<T> = Empty(message) as UiState<T>
+        fun <T> empty(message: String = "暂无数据"): UiState<T> = Empty(message)
     }
 }
 
 // ==================== 扩展函数 ====================
+
+/**
+ * 获取数据或默认值
+ * @param default 默认值
+ * @return 数据或默认值
+ */
+fun <T> UiState<T>.getOrDefault(default: T): T = when (this) {
+    is UiState.Success -> data
+    else -> default
+}
+
 
 /**
  * 空闲状态回调

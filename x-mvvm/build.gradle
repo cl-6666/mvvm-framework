@@ -27,16 +27,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    
+
     compileOptions {
-        // 使用 Java 11，兼容性更好，适合作为框架库
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-    
+
     kotlinOptions {
-        // 保持与 compileOptions 一致
-        jvmTarget = "11"
+        jvmTarget = '11'
     }
 
     buildFeatures {

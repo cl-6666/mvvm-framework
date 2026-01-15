@@ -1,7 +1,7 @@
 [versions]
 # Gradle 8.13 需要 AGP 8.7+
 agp = "8.7.3"
-kotlin = "2.0.21"
+kotlin = "1.9.24"
 ksp = "2.0.21-1.0.28"
 
 # Hilt
