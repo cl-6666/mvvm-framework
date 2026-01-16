@@ -21,7 +21,7 @@
 ### 版本更新历史：  
 [![](https://jitpack.io/v/cl-6666/mvvm-framework.svg)](https://jitpack.io/#cl-6666/mvvm-framework)
 
-- v3.2.2：(2025年01月15日) hilt版本
+- v3.2.6：(2025年01月15日) hilt版本
   - 无缝集成 Hilt 依赖注入。
   - 第三方库升级
   - Fragment 懒加载改用 `lifecycleScope`，彻底消除 Handler 导致的内存泄漏隐患。
