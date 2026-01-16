@@ -1,6 +1,6 @@
 
 ## 版本更新历史：  
-- v3.2.0：(最新)
+- v3+：(最新)
   - **架构现代化**：全面迁移至 Kotlin Flow (StateFlow/SharedFlow)
   - **生命周期优化**：修复 Loading 显示时序，优化 Fragment 懒加载
   - **内存安全**：修复 LoadingDialog 等组件的内存泄漏
@@ -184,7 +184,9 @@ class HomeFragment : BaseFragment<MainViewModel, FragmentHomeBinding>() {
 
 ---
 
-## 📚 进阶知识 (Hilt 组件生命周期)
+## 📚 进阶知识
+
+### 1. Hilt 组件生命周期
 
 了解 Hilt 组件的生命周期有助于您正确地管理依赖项的作用域。
 
@@ -195,6 +197,42 @@ class HomeFragment : BaseFragment<MainViewModel, FragmentHomeBinding>() {
 |	ViewModelComponent |	ViewModel 已创建	|	ViewModel 已销毁| 注入到 ViewModel 的依赖 |	
 |	ActivityComponent	|	Activity#onCreate()	|	Activity#onDestroy()| 注入到 Activity 的依赖 |	
 |	FragmentComponent	|	Fragment#onAttach()	|	Fragment#onDestroy()| 注入到 Fragment 的依赖 |
+
+### 2. MutableStateFlow 使用指南
+
+`MutableStateFlow` 是 Kotlin 协程库提供的一种状态容器式可观察数据流，是 LiveData 的现代化替代方案。
+
+#### 核心优势
+*   **空安全**：必须有初始值，避免了空指针异常。
+*   **防抖**：当新值与旧值相同时，不会发射数据，避免不必要的 UI 刷新。
+*   **线程安全**：内部是线程安全的，可以在任意线程更新。
+
+#### 标准写法
+在 ViewModel 中，我们通常使用 "Backing Property" 模式来保证状态的安全性：
+
+```kotlin
+// 1. 内部使用 MutableStateFlow，可读可写
+private val _uiState = MutableStateFlow<UiState<String>>(UiState.idle())
+
+// 2. 对外暴露 StateFlow，只读
+val uiState: StateFlow<UiState<String>> = _uiState.asStateFlow()
+
+// 3. 更新状态
+fun updateData(newData: String) {
+    // 方式一：直接赋值
+    _uiState.value = UiState.Success(newData)
+    
+    // 方式二：使用 emit (挂起函数)
+    // emit(UiState.Success(newData))
+    
+    // 方式三：原子更新 (推荐用于复杂状态修改)
+    // _uiState.update { it.copy(data = newData) }
+}
+```
+
+#### StateFlow vs SharedFlow
+*   **StateFlow (状态)**: 有初始值，粘性（保留最后一次的值），自动防抖。适用于 UI 状态（如加载中、数据列表）。
+*   **SharedFlow (事件)**: 无初始值，可配置粘性，不防抖。适用于单次事件（如 Toast、导航跳转）。
 
 ---
 
