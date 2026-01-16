@@ -25,7 +25,7 @@ gson = "2.11.0"
 # 其他
 coil = "2.7.0"
 persistentCookieJar = "v1.0.1"
-zlog = "2.0.0"
+zlog = "2.0.1"
 
 
 [libraries]
