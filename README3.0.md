@@ -34,11 +34,11 @@ plugins {
 
 dependencies {
    // 1. MVVM 框架依赖 (请使用最新版本)
-   implementation 'com.github.cl-6666:mvvm-framework:v3.2.0'
+   implementation 'com.github.cl-6666:mvvm-framework:v3.2.7'
    
-   // 2. Hilt 依赖注入 (推荐使用 2.44 或更高)
-   implementation "com.google.dagger:hilt-android:2.44"
-   kapt "com.google.dagger:hilt-android-compiler:2.44"
+   // 2. Hilt 依赖注入 (推荐使用 2.51 或更高)
+   implementation "com.google.dagger:hilt-android:2.51"
+   kapt "com.google.dagger:hilt-android-compiler:2.51"
 }
 ```
 
@@ -238,10 +238,13 @@ fun updateData(newData: String) {
 
 ## 🛠 常用三方库参考
 
-* [Kotlin Flow](https://developer.android.com/kotlin/flow): 替代 LiveData 的现代化响应式流。
-* [Hilt](https://dagger.dev/hilt/): Google 官方推荐的依赖注入库。
-* [Retrofit](https://github.com/square/retrofit) + [OkHttp](https://github.com/square/okhttp): 网络请求黄金搭档。
-* [Glide](https://github.com/bumptech/glide): 图片加载。
+*   **[Kotlin Flow](https://developer.android.com/kotlin/flow)**: 替代 LiveData 的现代化响应式流。
+*   **[Hilt](https://dagger.dev/hilt/)**: Google 官方推荐的依赖注入库。
+*   **[Retrofit](https://github.com/square/retrofit) + [OkHttp](https://github.com/square/okhttp)**: 网络请求黄金搭档。
+*   **[Coil](https://github.com/coil-kt/coil)**: 现代化的 Android 图片加载库 (Kotlin First)。
+*   **[BaseRecyclerViewAdapterHelper](https://github.com/CymChad/BaseRecyclerViewAdapterHelper)**: 强大灵活的 RecyclerView Adapter 封装库。
+*   **[Toaster](https://github.com/getActivity/Toaster)**: 一款精简、强大的 Android Toast 框架。
+*   **[ZLog](https://github.com/cl-6666/ZLog)**: 框架内置的日志库，支持文件打印和自动清理。
 
 ---
 

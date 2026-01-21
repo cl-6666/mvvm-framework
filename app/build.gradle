@@ -55,9 +55,9 @@ dependencies {
     implementation libs.material
     implementation libs.androidx.constraintlayout
 
-    // implementation 'com.github.cl-6666:mvvm-framework:v3.2.6'
+     implementation 'com.github.cl-6666:mvvm-framework:v3.2.7'
     // 本地模块
-    implementation project(path: ':x-mvvm')
+//    implementation project(path: ':x-mvvm')
 
     // BaseAdapter
     implementation "io.github.cymchad:BaseRecyclerViewAdapterHelper:4.0.0-beta04"
