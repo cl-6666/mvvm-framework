@@ -29,152 +29,7 @@ package com.maxvision.mvvm.log
  * @since 3.2.0
  */
 
-// ==================== 基础日志方法 ====================
-
-/**
- * VERBOSE 日志
- */
-fun logV(tag: String, msg: String) {
-    AliWrapperLog.v(tag, msg)
-}
-
-/**
- * VERBOSE 日志（格式化）
- */
-fun logV(tag: String, format: String, vararg args: Any?) {
-    AliWrapperLog.v(tag, format, *args)
-}
-
-/**
- * DEBUG 日志
- */
-fun logD(tag: String, msg: String) {
-    AliWrapperLog.d(tag, msg)
-}
-
-/**
- * DEBUG 日志（格式化）
- */
-fun logD(tag: String, format: String, vararg args: Any?) {
-    AliWrapperLog.d(tag, format, *args)
-}
-
-/**
- * INFO 日志
- */
-fun logI(tag: String, msg: String) {
-    AliWrapperLog.i(tag, msg)
-}
-
-/**
- * INFO 日志（格式化）
- */
-fun logI(tag: String, format: String, vararg args: Any?) {
-    AliWrapperLog.i(tag, format, *args)
-}
-
-/**
- * WARNING 日志
- */
-fun logW(tag: String, msg: String) {
-    AliWrapperLog.w(tag, msg)
-}
-
-/**
- * WARNING 日志（格式化）
- */
-fun logW(tag: String, format: String, vararg args: Any?) {
-    AliWrapperLog.w(tag, format, *args)
-}
-
-/**
- * WARNING 日志（带异常）
- */
-fun logW(tag: String, msg: String, throwable: Throwable) {
-    AliWrapperLog.w(tag, msg, throwable)
-}
-
-/**
- * WARNING 日志（仅异常）
- */
-fun logW(tag: String, throwable: Throwable) {
-    AliWrapperLog.w(tag, throwable)
-}
-
-/**
- * ERROR 日志
- */
-fun logE(tag: String, msg: String) {
-    AliWrapperLog.e(tag, msg)
-}
-
-/**
- * ERROR 日志（格式化）
- */
-fun logE(tag: String, format: String, vararg args: Any?) {
-    AliWrapperLog.e(tag, format, *args)
-}
-
-/**
- * ERROR 日志（带异常）
- */
-fun logE(tag: String, msg: String, throwable: Throwable) {
-    AliWrapperLog.e(tag, msg, throwable)
-}
-
 // ==================== 便捷方法（使用默认 TAG） ====================
-
-/**
- * DEBUG 日志（使用默认 TAG）
- */
-fun logD(msg: String) {
-    AliWrapperLog.d(msg)
-}
-
-/**
- * INFO 日志（使用默认 TAG）
- */
-fun logI(msg: String) {
-    AliWrapperLog.i(msg)
-}
-
-/**
- * WARNING 日志（使用默认 TAG）
- */
-fun logW(msg: String) {
-    AliWrapperLog.w(msg)
-}
-
-/**
- * ERROR 日志（使用默认 TAG）
- */
-fun logE(msg: String) {
-    AliWrapperLog.e(msg)
-}
-
-/**
- * ERROR 日志（使用默认 TAG，带异常）
- */
-fun logE(msg: String, throwable: Throwable) {
-    AliWrapperLog.e(msg, throwable)
-}
-
-// ==================== JSON/XML ====================
-
-/**
- * JSON 格式日志
- */
-fun logJson(tag: String, json: String) {
-    AliWrapperLog.json(tag, json)
-}
-
-/**
- * XML 格式日志
- */
-fun logXml(tag: String, xml: String) {
-    AliWrapperLog.xml(tag, xml)
-}
-
 // ==================== 扩展属性 ====================
 
 /**
@@ -224,6 +79,16 @@ fun Any.logD(format: String, vararg args: Any?) {
 }
 
 /**
+ * DEBUG 日志（自定义 TAG）
+ *
+ * 优先匹配：logD("TAG", "Msg")
+ * 此时不进行格式化解析，直接使用传入的 TAG
+ */
+fun Any.logD(tag: String, msg: String) {
+    AliWrapperLog.d(tag, msg)
+}
+
+/**
  * INFO 日志（自动使用类名作为 TAG）
  */
 fun Any.logI(msg: String) {
@@ -238,6 +103,16 @@ fun Any.logI(format: String, vararg args: Any?) {
 }
 
 /**
+ * INFO 日志（自定义 TAG）
+ *
+ * 优先匹配：logI("TAG", "Msg")
+ * 此时不进行格式化解析，直接使用传入的 TAG
+ */
+fun Any.logI(tag: String, msg: String) {
+    AliWrapperLog.i(tag, msg)
+}
+
+/**
  * WARNING 日志（自动使用类名作为 TAG）
  */
 fun Any.logW(msg: String) {
@@ -249,6 +124,16 @@ fun Any.logW(msg: String) {
  */
 fun Any.logW(format: String, vararg args: Any?) {
     AliWrapperLog.w(this.javaClass.simpleName, format, *args)
+}
+
+/**
+ * WARNING 日志（自定义 TAG）
+ *
+ * 优先匹配：logW("TAG", "Msg")
+ * 此时不进行格式化解析，直接使用传入的 TAG
+ */
+fun Any.logW(tag: String, msg: String) {
+    AliWrapperLog.w(tag, msg)
 }
 
 /**
@@ -273,10 +158,36 @@ fun Any.logE(format: String, vararg args: Any?) {
 }
 
 /**
+ * ERROR 日志（自定义 TAG）
+ *
+ * 优先匹配：logE("TAG", "Msg")
+ * 此时不进行格式化解析，直接使用传入的 TAG
+ */
+fun Any.logE(tag: String, msg: String) {
+    AliWrapperLog.e(tag, msg)
+}
+
+/**
  * ERROR 日志（带异常，自动使用类名作为 TAG）
  */
 fun Any.logE(msg: String, throwable: Throwable) {
     AliWrapperLog.e(this.javaClass.simpleName, msg, throwable)
+}
+
+
+// ==================== JSON/XML ====================
+/**
+ * JSON 格式日志
+ */
+fun logJson(tag: String, json: String) {
+    AliWrapperLog.json(tag, json)
+}
+
+/**
+ * XML 格式日志
+ */
+fun logXml(tag: String, xml: String) {
+    AliWrapperLog.xml(tag, xml)
 }
 
 /**

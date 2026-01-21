@@ -113,7 +113,9 @@ public class AliWrapperLog {
         // 初始化 ZLog
         ZLog.init(config, printers.toArray(new Printer[0]));
         mIsInitialized = true;
-        mIsEnabled = enableLog;
+        // 修复：只要初始化了，就允许通过，具体由 Printer 决定是否输出
+        // enableLog 参数主要用于控制文件日志
+        mIsEnabled = true; 
 
         // 输出初始化信息
         i("INIT", "╔════════════════════════════════════════════");
@@ -221,127 +223,253 @@ public class AliWrapperLog {
     // ==================== 日志输出方法 ====================
 
     /**
-     * VERBOSE 级别日志
+     * VERBOSE 级别日志，使用默认的标签
      */
-    public static void v(String tag, String msg) {
+    public static void v(String msg) {
         if (!isLogEnabled() || msg == null) return;
-        ZLog.v("[" + tag + "] " + msg);
+        ZLog.v(msg);
     }
 
     /**
-     * VERBOSE 级别日志（格式化）
+     * VERBOSE 级别日志，带标签
+     */
+    public static void v(String tag, String msg) {
+        if (!isLogEnabled() || msg == null) return;
+        ZLog.tag(tag).v(msg);
+    }
+
+    /**
+     * VERBOSE 级别日志（格式化）,使用默认的标签
+     */
+    public static void v(String format, Object... args) {
+        if (!isLogEnabled() || format == null) return;
+        try {
+            ZLog.v(String.format(Locale.US, format, args));
+        } catch (Exception e) {
+            e("LOG", "日志格式化失败: " + format, e);
+        }
+    }
+
+    /**
+     * VERBOSE 级别日志（格式化）,带标签
      */
     public static void v(String tag, String format, Object... args) {
         if (!isLogEnabled() || format == null) return;
         try {
-            ZLog.v("[" + tag + "] " + String.format(Locale.US, format, args));
+            ZLog.tag(tag).v(String.format(Locale.US, format, args));
         } catch (Exception e) {
             e("LOG", "日志格式化失败: " + format, e);
         }
     }
 
     /**
-     * DEBUG 级别日志
+     * DEBUG 级别日志，使用默认的标签
      */
-    public static void d(String tag, String msg) {
+    public static void d(String msg) {
         if (!isLogEnabled() || msg == null) return;
-        ZLog.d("[" + tag + "] " + msg);
+        ZLog.d(msg);
     }
 
     /**
-     * DEBUG 级别日志（格式化）
+     * DEBUG 级别日志，带标签
+     */
+    public static void d(String tag, String msg) {
+        if (!isLogEnabled() || msg == null) return;
+        ZLog.tag(tag).d(msg);
+    }
+
+    /**
+     * DEBUG 级别日志（格式化）,使用默认的标签
+     */
+    public static void d(String format, Object... args) {
+        if (!isLogEnabled() || format == null) return;
+        try {
+            ZLog.d(String.format(Locale.US, format, args));
+        } catch (Exception e) {
+            e("LOG", "日志格式化失败: " + format, e);
+        }
+    }
+
+    /**
+     * DEBUG 级别日志（格式化）,带标签
      */
     public static void d(String tag, String format, Object... args) {
         if (!isLogEnabled() || format == null) return;
         try {
-            ZLog.d("[" + tag + "] " + String.format(Locale.US, format, args));
+            ZLog.tag(tag).d(String.format(Locale.US, format, args));
         } catch (Exception e) {
             e("LOG", "日志格式化失败: " + format, e);
         }
     }
 
     /**
-     * INFO 级别日志
+     * INFO 级别日志，使用默认的标签
      */
-    public static void i(String tag, String msg) {
+    public static void i(String msg) {
         if (!isLogEnabled() || msg == null) return;
-        ZLog.i("[" + tag + "] " + msg);
+        ZLog.i(msg);
     }
 
     /**
-     * INFO 级别日志（格式化）
+     * INFO 级别日志，带标签
+     */
+    public static void i(String tag, String msg) {
+        if (!isLogEnabled() || msg == null) return;
+        ZLog.tag(tag).i(msg);
+    }
+
+
+    /**
+     * INFO 级别日志（格式化）,使用默认的标签
+     */
+    public static void i(String format, Object... args) {
+        if (!isLogEnabled() || format == null) return;
+        try {
+            ZLog.i(String.format(Locale.US, format, args));
+        } catch (Exception e) {
+            e("LOG", "日志格式化失败: " + format, e);
+        }
+    }
+
+    /**
+     * INFO 级别日志（格式化）,带标签
      */
     public static void i(String tag, String format, Object... args) {
         if (!isLogEnabled() || format == null) return;
         try {
-            ZLog.i("[" + tag + "] " + String.format(Locale.US, format, args));
+            ZLog.tag(tag).i(String.format(Locale.US, format, args));
         } catch (Exception e) {
             e("LOG", "日志格式化失败: " + format, e);
         }
     }
 
     /**
-     * WARNING 级别日志
+     * WARNING 级别日志，使用默认的标签
      */
-    public static void w(String tag, String msg) {
+    public static void w(String msg) {
         if (!isLogEnabled() || msg == null) return;
-        ZLog.w("[" + tag + "] " + msg);
+        ZLog.w(msg);
     }
 
     /**
-     * WARNING 级别日志（格式化）
+     * WARNING 级别日志，带标签
+     */
+    public static void w(String tag, String msg) {
+        if (!isLogEnabled() || msg == null) return;
+        ZLog.tag(tag).w(msg);
+    }
+
+    /**
+     * WARNING 级别日志（格式化）,使用默认的标签
+     */
+    public static void w(String format, Object... args) {
+        if (!isLogEnabled() || format == null) return;
+        try {
+            ZLog.w(String.format(Locale.US, format, args));
+        } catch (Exception e) {
+            e("LOG", "日志格式化失败: " + format, e);
+        }
+    }
+
+    /**
+     * WARNING 级别日志（格式化）,带标签
      */
     public static void w(String tag, String format, Object... args) {
         if (!isLogEnabled() || format == null) return;
         try {
-            ZLog.w("[" + tag + "] " + String.format(Locale.US, format, args));
+            ZLog.tag(tag).w(String.format(Locale.US, format, args));
         } catch (Exception e) {
             e("LOG", "日志格式化失败: " + format, e);
         }
     }
 
     /**
-     * WARNING 级别日志（带异常）
+     * WARNING 级别日志（带异常）,带标签
      */
     public static void w(String tag, String msg, Throwable throwable) {
         if (!isLogEnabled()) return;
-        ZLog.w("[" + tag + "] " + (msg != null ? msg : ""), throwable);
+        ZLog.tag(tag).w((msg != null ? msg : ""), throwable);
     }
 
     /**
-     * WARNING 级别日志（仅异常）
+     * WARNING 级别日志（仅异常）,使用默认的标签
+     */
+    public static void w(Throwable throwable) {
+        if (!isLogEnabled()) return;
+        ZLog.w(throwable);
+    }
+
+    /**
+     * WARNING 级别日志（仅异常）,带标签
      */
     public static void w(String tag, Throwable throwable) {
         if (!isLogEnabled()) return;
-        ZLog.w("[" + tag + "]", throwable);
+        ZLog.tag(tag).w(throwable);
     }
 
     /**
-     * ERROR 级别日志
+     * ERROR 级别日志，使用默认的标签
+     */
+    public static void e(String msg) {
+        if (!isLogEnabled() || msg == null) return;
+        ZLog.e(msg);
+    }
+
+    /**
+     * ERROR 级别日志，带标签
      */
     public static void e(String tag, String msg) {
         if (!isLogEnabled() || msg == null) return;
-        ZLog.e("[" + tag + "] " + msg);
+        ZLog.tag(tag).e(msg);
     }
 
     /**
-     * ERROR 级别日志（格式化）
+     * ERROR 级别日志（格式化）,使用默认的标签
      */
-    public static void e(String tag, String format, Object... args) {
+    public static void e(String format, Object... args) {
         if (!isLogEnabled() || format == null) return;
         try {
-            ZLog.e("[" + tag + "] " + String.format(Locale.US, format, args));
+            ZLog.e(String.format(Locale.US, format, args));
         } catch (Exception e) {
             ZLog.e("[LOG] 日志格式化失败: " + format, e);
         }
     }
 
     /**
-     * ERROR 级别日志（带异常）
+     * ERROR 级别日志（格式化）,带标签
+     */
+    public static void e(String tag, String format, Object... args) {
+        if (!isLogEnabled() || format == null) return;
+        try {
+            ZLog.tag(tag).e(String.format(Locale.US, format, args));
+        } catch (Exception e) {
+            ZLog.e("[LOG] 日志格式化失败: " + format, e);
+        }
+    }
+
+    /**
+     * ERROR 级别日志（带异常）,使用默认的标签
+     */
+    public static void e(String msg, Throwable throwable) {
+        if (!isLogEnabled()) return;
+        ZLog.e((msg != null ? msg : ""), throwable);
+    }
+
+    /**
+     * ERROR 级别日志（带异常）,带标签
      */
     public static void e(String tag, String msg, Throwable throwable) {
         if (!isLogEnabled()) return;
-        ZLog.e("[" + tag + "] " + (msg != null ? msg : ""), throwable);
+        ZLog.tag(tag).e((msg != null ? msg : ""), throwable);
+    }
+
+
+    /**
+     * JSON 格式日志,使用默认的标签
+     */
+    public static void json(String jsonStr) {
+        if (!isLogEnabled() || jsonStr == null) return;
+        ZLog.json(jsonStr);
     }
 
     /**
@@ -353,48 +481,19 @@ public class AliWrapperLog {
     }
 
     /**
+     * XML 格式日志,使用默认的标签
+     */
+    public static void xml(String xmlStr) {
+        if (!isLogEnabled() || xmlStr == null) return;
+        ZLog.xml(xmlStr);
+    }
+
+    /**
      * XML 格式日志
      */
     public static void xml(String tag, String xmlStr) {
         if (!isLogEnabled() || xmlStr == null) return;
         ZLog.tag(tag).xml(xmlStr);
-    }
-
-    // ==================== 便捷方法（不需要 TAG） ====================
-
-    /**
-     * DEBUG 日志（使用默认 TAG）
-     */
-    public static void d(String msg) {
-        d(TAG, msg);
-    }
-
-    /**
-     * INFO 日志（使用默认 TAG）
-     */
-    public static void i(String msg) {
-        i(TAG, msg);
-    }
-
-    /**
-     * WARNING 日志（使用默认 TAG）
-     */
-    public static void w(String msg) {
-        w(TAG, msg);
-    }
-
-    /**
-     * ERROR 日志（使用默认 TAG）
-     */
-    public static void e(String msg) {
-        e(TAG, msg);
-    }
-
-    /**
-     * ERROR 日志（使用默认 TAG，带异常）
-     */
-    public static void e(String msg, Throwable throwable) {
-        e(TAG, msg, throwable);
     }
 
     // ==================== 工具方法 ====================
