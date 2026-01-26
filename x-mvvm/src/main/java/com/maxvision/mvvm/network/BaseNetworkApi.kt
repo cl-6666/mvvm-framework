@@ -51,7 +51,9 @@ abstract class BaseNetworkApi {
      */
     private val okHttpClientHttps: OkHttpClient
         get() {
-            return HttpsCerUtils.trustAllCertificateClient
+            var builder = HttpsCerUtils.trustAllCertificateClient.newBuilder()
+            builder = setHttpClientBuilder(builder)
+            return builder.build()
         }
 }
 

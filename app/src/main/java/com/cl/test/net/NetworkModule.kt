@@ -73,7 +73,7 @@ object NetworkModule : BaseNetworkApi(){
 
     @Provides
     fun provideApiService(): ApiService {
-        return NetworkModule.getApi(ApiService::class.java, Constants.BASE_URL, false)
+        return NetworkModule.getApi(ApiService::class.java, Constants.BASE_URL, true)
     }
 
 
